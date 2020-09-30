@@ -1,0 +1,31 @@
+{
+  "presets": [
+    [
+      "env",
+      {
+        "targets": {
+          "browsers": [
+            "last 2 versions",
+            "not ie <= 8"
+          ]
+        }
+      }
+    ]
+  ],
+  "plugins": [
+    ["import", {
+      "libraryName": "vant",
+      "libraryDirectory": "es",
+      "style": true
+    }, "vant"],
+    "transform-runtime",
+    "syntax-dynamic-import",
+    [
+      "component",
+      [{
+        "libraryName": "mint-ui",
+        "style": true
+      }]
+    ]
+  ]
+}

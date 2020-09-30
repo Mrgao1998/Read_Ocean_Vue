@@ -1,0 +1,38 @@
+{
+  //指定脚本的运行环境
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true
+  },
+  //继承standard规则
+  "extends": "standard",
+  //使用 babel-eslint 作为解释器
+  "parser": "babel-eslint",
+  //使用插件来解析 HTML（.vue 文件） 中的 JS 代码
+  "plugins": [
+    "html"
+  ],
+  //覆盖配置中的规则
+  "rules": {
+    //引号规则
+    "quotes": [
+      "error",
+      "double"
+    ],
+    //分号规则
+    "semi": [
+      "error",
+      "never"
+    ],
+    //function ()括号之前的空格规则
+    "space-before-function-paren": [
+      "error",
+      {
+        "anonymous": "always",
+        "named": "never",
+        "asyncArrow": "ignore"
+      }
+    ]
+  }
+}

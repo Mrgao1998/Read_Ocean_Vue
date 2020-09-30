@@ -1,0 +1,161 @@
+<template lang="html">
+  <a class="block-wrapper" :style="{'width':customWidth}" 
+   @click="goToCommunityDetail()">
+    <img :src="bookImage" class="block-image" alt="板块书籍图">
+    <div class="block-mask">
+      <h4 class="block-name">{{bookName}}</h4>
+      <div class="block-meta">
+        <div class="block-comments">
+          <i class="comment-icon"></i>
+          <span>{{commentNum}}</span>
+        </div>
+        <div class="block-like">
+          <i class="like-icon"></i>
+          <span>{{likeNum}}</span>
+        </div>
+      </div>
+      <span class="block-btn">查看板块</span>
+    </div>
+  </a>
+</template>
+
+<script>
+    import * as API from "../../api/api.js"
+    import user from "../../mixins/user.js"
+    import errorHandler from "../../mixins/errorHandler.js"
+    import Axios from "axios"
+    export default {
+        mixins: [user, errorHandler],
+        props: {
+            id: {
+                type: String,
+                required: true
+            },
+            bookName: {
+                type: String,
+                required: true
+            },
+            bookImage: {
+                type: String,
+                required: false
+            },
+            likeNum: {
+                type: Number,
+                required: true
+            },
+            commentNum: {
+                type: Number,
+                required: true
+            },
+            customWidth: {
+                type: String,
+                required: true,
+                default: "100%"
+            }
+        },
+        computed: {
+            blockUrl() {
+                return "/ReadingOcean/wechat/communityDetail?blockId=".concat(this.id)
+            }
+        },
+        methods: {
+            goToCommunityDetail() { // 先判断是否有购买此书
+                Axios({
+                    url: API.judgeSankeBlockAuthority,
+                    method: "GET",
+                    params: {
+                        userId: this.userId,
+                        blockId: this.id
+                    },
+                    headers: {
+                        "Authorization": this.token,
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    }
+                }).then((res) => {
+                    if (res.status === 200) {
+                        // 登录成功之后跳转到
+                        if (res.data.code === 200) {
+                            document.location.assign(this.blockUrl)
+                        } else if (res.data.code === 401) {
+                            alert("还未购买该书籍的答题权限 无法查看")
+                        }
+                    }
+                }).catch((err) => {
+                    this.errorHandler(err)
+                })
+            }
+        }
+    }
+</script>
+
+<style lang="css" scoped>
+    .block-wrapper {
+        display: block;
+        position: relative;
+        z-index: 0;
+    }
+    
+    .block-image {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+    
+    .block-mask {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        flex-direction: column;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1;
+        background-color: rgba(0, 0, 0, 0.6);
+    }
+    
+    .block-name {
+        color: #fff;
+        font-size: 1rem;
+        margin: 0 15px;
+        text-align: center;
+    }
+    
+    .block-like,
+    .block-comments {
+        display: flex;
+        align-items: flex-end;
+        color: #fff;
+        font-size: 0.9rem;
+        padding: 0 5px;
+        float: left;
+    }
+    
+    .like-icon {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+        background: url("../../../static/images/community/thumb-up.svg") no-repeat;
+        background-size: cover;
+    }
+    
+    .comment-icon {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        margin-right: 5px;
+        background: url("../../../static/images/community/comment.svg") no-repeat;
+        background-size: cover;
+    }
+    
+    .block-btn {
+        display: block;
+        color: #fff;
+        border: 1px solid #fff;
+        padding: 3px 10px;
+        font-size: 1rem;
+        border-radius: 50px;
+    }
+</style>

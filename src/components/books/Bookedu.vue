@@ -1,0 +1,483 @@
+<template>
+  <div class="container">
+    <div class="store__show" @click="storeShow = false" v-if="storeShow">
+      <span>长按图标识别</span>
+      <img src="../../../static/images/personal-center/store.png">
+    </div>
+    <div class="top-tool">
+      <div class="search-wrapper">
+        <input
+          v-model="searchText"
+          cancel-text="取消"
+          placeholder="搜索图书"
+          class="search-input"
+          @input="isSearching = true">
+          <button class="search-cancel-btn" @click="cancelSearch()" v-show="isSearching">取消</button>
+      </div>
+      <div class="filter-icon" @click="storeShow = true" v-if="!isSearching">
+        <img src="../../../static/images/personal-center/shopcart.svg" alt="" width="100%">
+        <span class="filter-text">海洋书店</span>
+      </div>
+      <div class="filter-icon" @click="confirmSearch()" v-else>
+        <img src="../../../static/images/Book/search-book.svg" alt="" width="100%">
+      </div>
+    </div>
+    <!--本来想用于弹出更改年级以及书记类型的-->
+    <!-- <mt-popup v-model="popupVisible" position="bottom" class="bottompicker">
+      <mt-picker :slots="popuppicker" @change="popupValuesChange" :showToolbar="true" valueKey="label">
+        <div class="picker-toolbar">
+          <mt-button size="small" class="picker-button" @click="popupVisible = false">取消</mt-button>
+          <mt-button size="small" class="picker-button" @click="filterConfirm()">确定</mt-button>
+       </div>
+      </mt-picker>
+    </mt-popup> -->
+
+
+    
+    <div
+      class="book-wrapper"
+      v-if="!isSearching"
+      v-infinite-scroll="loadMoreBook"
+      infinite-scroll-disabled="bookLoading"
+      infinite-scroll-immediate-check="true"
+      infinite-scroll-distance="50">
+      <div class="BtnList">
+        <div class="grade-list">
+          <button v-for="grade in gradeList" :value="grade.value" :id="checkGradeBtn(grade.label)" @click="changeBookByGrade($event)">{{grade.label}}</button>
+        </div>
+        <div class="type-list">
+          <button v-for="type in categoryList" :value="type.value" :id="checkTypeBtn(type.label)" @click="changeBookByType($event)">{{type.label}}</button>
+        </div>
+      </div>
+      <single-book
+        v-for="book in bookList"
+        customWidth="33.33333%"
+        :bookname="book.title"
+        :imgSrc="book.coverImg"
+        :bookId="book.id"
+        :key="book.id"></single-book>
+    </div>
+
+
+
+
+    <div class="book-wrapper" v-else>
+      <single-book
+        v-for="book in searchResultList"
+        customWidth="33.33333%"
+        :bookname="book.title"
+        :imgSrc="book.coverImg"
+        :bookId="book.id"
+        :key="book.id"></single-book>
+    </div>
+  </div>
+</template>
+
+<script>
+    import Book from "../../components/common/book/Book.vue"
+    import user from "../../mixins/user.js"
+    import errorHandler from "../../mixins/errorHandler.js"
+    import getBooks from "../../mixins/getBooks.js"
+    import searchBook from "../../mixins/searchBook.js"
+    import {
+        Toast,
+        Indicator
+    } from "mint-ui"
+    import grade from "../../utils/grade.js"
+    import category from "../../utils/category.js"
+    export default {
+        mixins: [user, errorHandler, getBooks, searchBook],
+        data() {
+            return {
+                bookList: [],
+                popupVisible: false,
+                searchText: "",
+                searchResultList: [],
+                currentPage: 1,
+                maxPage: 100,
+                seletedCate: null,
+                seletedGrade: null,
+                isSearching: false,
+                bookLoading: false,
+                gradeList: [],
+                categoryList: [],
+                popuppicker: [{
+                    flex: 1,
+                    values: ["年级", "书籍分类"],
+                    textAlign: "center",
+                    defaultIndex: 0
+                }, {
+                    divider: true,
+                    content: "-"
+                }, {
+                    flex: 1,
+                    values: [],
+                    textAlign: "center",
+                    defaultIndex: 0
+                }],
+                storeShow: false
+            }
+        },
+        methods: {
+            checkGradeBtn(type) {
+                if (type === "全部") return "nowGradeBtn"
+                else return ""
+            },
+            checkTypeBtn(type) {
+                if (type === "全部") return "nowTypeBtn"
+                else return ""
+            },
+            popupValuesChange(picker, values) {
+                if (values[0] === "年级") {
+                    this.popuppicker[2].values = grade
+                    this.seletedGrade = values[1] ? values[1].value : null
+                    this.seletedCate = null
+                } else if (values[0] === "书籍分类") {
+                    this.popuppicker[2].values = category
+                    this.seletedCate = values[1] ? values[1].value : null
+                    this.seletedGrade = null
+                }
+            },
+            filterConfirm() {
+                this.bookLoading = true
+                this.popupVisible = false
+                this.currentPage = 1
+                Indicator.open({
+                    text: "加载中...",
+                    spinnerType: "snake"
+                })
+                this.getBooks({
+                    grade: this.seletedGrade,
+                    category: this.seletedCate,
+                    schoolId: this.schoolId,
+                    pageNum: this.currentPage,
+                    limits: 12,
+                    token: this.token
+                }).then(res => {
+                    Indicator.close()
+                    this.bookLoading = false
+                    this.bookList = res.data.dataList
+                    this.maxPage = res.data.totalPage
+                }).catch(err => {
+                    this.bookLoading = false
+                    Indicator.close()
+                    this.errorHandler(err)
+                })
+            },
+            cancelSearch() {
+                this.isSearching = false
+                this.searchText = ""
+                this.searchResultList = []
+            },
+            loadMoreBook() {
+                this.bookLoading = true
+                if (this.currentPage < this.maxPage) {
+                    Indicator.open({
+                        text: "加载更多...",
+                        spinnerType: "snake"
+                    })
+                    this.currentPage += 1
+                    this.getBooks({
+                        grade: this.seletedGrade,
+                        schoolId: this.schoolId,
+                        category: this.seletedCate,
+                        pageNum: this.currentPage,
+                        limits: 12,
+                        token: this.token
+                    }).then(res => {
+                        Indicator.close()
+                        this.bookLoading = false
+                        this.bookList = this.bookList.concat(res.data.dataList)
+                    }).catch(err => {
+                        Indicator.close()
+                        this.bookLoading = false
+                        this.errorHandler(err)
+                    })
+                } else {
+                    Toast({
+                        message: "已无更多数据",
+                        position: "bottom",
+                        duration: 1500
+                    })
+                }
+            },
+            confirmSearch() {
+                Indicator.open({
+                    text: "搜索中...",
+                    spinnerType: "snake"
+                })
+                this.searchBook({
+                    keyWord: this.searchText,
+                    pageNum: 1,
+                    limits: 12,
+                    token: this.token
+                }).then(res => {
+                    Indicator.close()
+                    this.searchResultList = res.data.dataList
+                }).catch(err => {
+                    Indicator.close()
+                    this.errorHandler(err)
+                })
+            },
+            changeBookByGrade($event) {
+                if (event.currentTarget.id !== "nowGradeBtn") {
+                    //获取当前被选中的年级
+                    var node = document.getElementById("nowGradeBtn")
+                        //选中的年级的id设为空
+                    node.id = ""
+                        //为点击的年级加上id，更改字体颜色为红色
+                    event.currentTarget.id = "nowGradeBtn"
+                        //更改当前选中年级
+                    this.seletedGrade = event.currentTarget.value
+                    Indicator.open({
+                            text: "加载中...",
+                            spinnerType: "snake"
+                        })
+                        //更改当前getBooks的数据，主要是获取当前选中年级类别对应的书本列表
+                    this.getBooks({
+                        grade: this.seletedGrade,
+                        category: this.seletedCate,
+                        schoolId: this.schoolId,
+                        pageNum: 1,
+                        limits: 12,
+                        token: this.token
+                    }).then(res => {
+                        Indicator.close()
+                        this.bookLoading = false
+                        this.bookList = res.data.dataList
+                        this.maxPage = res.data.totalPage
+                    }).catch(err => {
+                        Indicator.close()
+                        this.errorHandler(err)
+                    })
+                }
+            },
+            changeBookByType($event) {
+                if (event.currentTarget.id !== "nowTypeBtn") {
+                    var node = document.getElementById("nowTypeBtn")
+                    node.id = ""
+                    event.currentTarget.id = "nowTypeBtn"
+                    this.seletedCate = event.currentTarget.value
+                    Indicator.open({
+                        text: "加载中...",
+                        spinnerType: "snake"
+                    })
+                    this.getBooks({
+                        grade: this.seletedGrade,
+                        category: this.seletedCate,
+                        schoolId: this.schoolId,
+                        pageNum: 1,
+                        limits: 12,
+                        token: this.token
+                    }).then(res => {
+                        Indicator.close()
+                        this.bookLoading = false
+                        this.bookList = res.data.dataList
+                        this.maxPage = res.data.totalPage
+                    }).catch(err => {
+                        Indicator.close()
+                        this.errorHandler(err)
+                    })
+                }
+            }
+        },
+        created() {
+            this.categoryList = category
+            this.gradeList = grade
+            Indicator.open({
+                text: "加载中...",
+                spinnerType: "snake"
+            })
+            this.getBooks({
+                grade: this.seletedGrade,
+                category: this.seletedCate,
+                pageNum: this.currentPage,
+                schoolId: this.schoolId,
+                limits: 12,
+                token: this.token
+            }).then(res => {
+                Indicator.close()
+                this.bookList = res.data.dataList
+                this.maxPage = res.data.totalPage
+            }).catch(err => {
+                Indicator.close()
+                this.errorHandler(err)
+            })
+        },
+        components: {
+            "single-book": Book
+        }
+    }
+</script>
+
+<style lang="css" scoped>
+    .top-tool {
+        position: fixed;
+        top: 0;
+        box-shadow: 0 1px 5px #E5E9F2;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-sizing: border-box;
+        margin: 0 auto;
+        padding: 10px 15px;
+        width: 100%;
+        background-color: #fff;
+        z-index: 1;
+    }
+    
+    .search-wrapper {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        height: auto;
+        padding: 0;
+        width: 80%;
+    }
+    
+    .search-input {
+        appearance: none;
+        outline: 0;
+        font-size: 1rem;
+        line-height: 40px;
+        border: 1px solid #eee;
+        padding: 0 10px;
+        width: 100%;
+    }
+    
+    .store__show {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        z-index: 100;
+        text-align: center;
+        background-color: rgb(255, 255, 255, 0.8);
+    }
+    
+    .store__show>span {
+        font-size: 2rem;
+        color: rgb(22, 119, 210);
+        margin: 25% 0;
+    }
+    
+    .store__show>img {
+        margin: 35% 0;
+    }
+    
+    .search-cancel-btn {
+        outline: 0;
+        border: 0;
+        background: none;
+    }
+    
+    .filter-icon {
+        width: 40px;
+        height: 40px;
+        position: relative;
+        bottom: 5px;
+    }
+    
+    .filter-text {
+        font-size: 0.8rem;
+        position: absolute;
+        width: 60px;
+        left: -10px;
+        bottom: -15px;
+        text-align: center;
+        color: rgb(117, 128, 142);
+    }
+    
+    .picker-toolbar {
+        display: flex;
+        justify-content: space-around;
+        padding: 5px 0;
+    }
+    
+    .picker-button {
+        border: 0;
+        background: #fff;
+        box-shadow: none;
+        font-size: 1rem;
+        color: #26A2FF;
+    }
+    
+     ::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .book-wrapper {
+        position: absolute;
+        top: 62px;
+        bottom: 55px;
+        overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
+        box-sizing: border-box;
+        z-index: 0;
+        padding: 10px;
+    }
+    
+    .book-wrapper>a {
+        float: left;
+        height: 178px;
+    }
+    
+    .book-wrapper>a>div>img {
+        height: 178px;
+    }
+    
+    .bottompicker {
+        width: 100%;
+    }
+    
+    .BtnList {
+        width: 100%;
+    }
+    
+    .grade-list {
+        white-space: nowrap;
+        overflow-x: scroll;
+        overflow-y: hidden;
+        width: 100%;
+        height: 20px;
+        padding: 5px 3px;
+        box-shadow: 0 1px 5px #E5E9F2;
+    }
+    
+    .grade-list button {
+        width: 60px;
+        border: 1px;
+        color: rgb(149, 157, 168);
+        background-color: rgb(255, 255, 255);
+        outline: none;
+    }
+    
+    .type-list {
+        white-space: nowrap;
+        overflow-x: scroll;
+        overflow-y: hidden;
+        width: 100%;
+        height: 20px;
+        line-height: 20px;
+        padding: 5px 3px;
+        box-shadow: 0 1px 5px #E5E9F2;
+    }
+    
+    .type-list button {
+        margin-left: 10px;
+        border: 1px solid rgb(1, 141, 234);
+        background-color: rgb(255, 255, 255);
+        padding: 0 5px;
+        outline: none;
+    }
+    
+    #nowGradeBtn {
+        color: red;
+    }
+    
+    #nowTypeBtn {
+        border: 1px solid rgb(1, 141, 234);
+        background-color: rgb(1, 141, 234);
+        color: rgb(255, 255, 255);
+    }
+</style>

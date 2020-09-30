@@ -1,0 +1,5 @@
+export const baseUrl = "https://ro.bnuz.edu.cn"
+// export const baseUrl = "http://10.20.5.180:8080"
+// export const baseUrl = "http://10.19.205.91:8888"
+// export const baseUrl = "http://172.31.44.156:8888"
+// export const baseUrl = "https://bikyoo.cn"

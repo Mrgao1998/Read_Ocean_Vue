@@ -1,0 +1,118 @@
+<template lang="html">
+    <a class="book"
+    :style="{ width: customWidth }"
+    @click="jumpAfterJudge()">
+      <div class="book-img-wrapper">
+        <img class="book-img"
+        :src=imgSrc alt="">
+      </div>
+      <div class="book-title" style="color:green" v-if="isNecessary === 0">{{bookname}}</div>
+      <div class="book-title" style="color:red" v-if="isNecessary === 1">{{bookname}}</div>
+    </a>
+</template>
+
+<script type="text/javascript">
+    import * as API from "../../../api/api.js"
+    import user from "../../../mixins/user.js"
+    import errorHandler from "../../../mixins/errorHandler.js"
+    import Axios from "axios"
+
+    export default {
+        mixins: [user, errorHandler],
+        name: "Book",
+        data() {
+            return {
+                code: ""
+            }
+        },
+        props: {
+            bookname: {
+                type: String,
+                required: true
+            },
+            imgSrc: {
+                type: null,
+                required: true
+            },
+            customWidth: {
+                type: String,
+                default () {
+                    return "100%"
+                }
+            },
+            bookId: {
+                type: String,
+                required: true
+            },
+            isNecessary: {
+                type: Number,
+                required: false
+            }
+        },
+        methods: {
+            jumpAfterJudge() {
+                Axios({
+                    url: API.judgeUserAnswerAuthority,
+                    method: "POST",
+                    params: {
+                        userId: this.userId,
+                        bookId: this.bookId
+                    },
+                    headers: {
+                        "Authorization": this.token,
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    }
+                }).then((res) => {
+                    if (res.status === 200) {
+                        // 登录成功之后跳转到
+                        this.code = res.data.code
+                        console.log("this.code is " + this.code)
+                        document.location.assign("/ReadingOcean/wechat/bookDetail?bookId=" + this.bookId + "&code=" + this.code)
+                    }
+                }).catch((err) => {
+                    this.errorHandler(err)
+                })
+            }
+        }
+    }
+</script>
+
+<style lang="css" scoped>
+    .book {
+        box-sizing: border-box;
+        text-decoration: none;
+        display: block;
+        padding: 5px;
+        margin: 0;
+    }
+    
+    .book-img-wrapper {
+        margin: 0 auto;
+        overflow: hidden;
+        box-shadow: 0px 0px 2px 0px #c0c0c0;
+        border-radius: 5px;
+    }
+    
+    .book-img:first-child {
+        display: block;
+    }
+    
+    .book-title {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 8px 5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: center;
+        white-space: nowrap;
+        line-height: 1;
+        font-size: 0.9rem;
+        font-weight: normal;
+        color: #000;
+    }
+    
+    .book-img {
+        width: 100%;
+        height: 170px;
+    }
+</style>

@@ -1,0 +1,25 @@
+.popup {
+  width: 100%;
+  z-index: 0;
+}
+
+.popup__content {
+  width: 100%;
+  position: absolute;
+  top: 50px;
+  bottom: 55px;
+  -webkit-overflow-scrolling: touch;
+  overflow-y: scroll;
+}
+
+.popup__header {
+  height: 50px;
+  background-color: #9CB8CA;
+  align-items: center;
+  font-size: 1.2rem;
+}
+
+.popup__header .mint-header-title {
+  margin: 0;
+  line-height: 50px;
+}

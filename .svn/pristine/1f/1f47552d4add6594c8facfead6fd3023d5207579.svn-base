@@ -1,0 +1,1863 @@
+/* eslint-disable no-unused-expressions */
+<template>
+  <div class="app">
+    <!-- SVG 波浪动画 -->
+    <div class="wave">
+      <svg class="wave__image"
+           xmlns="https://www.w3.org/2000/svg"
+           viewBox="0 24 150 28"
+           preserveAspectRatio="none">
+        <defs>
+          <path id="gentle-wave"
+                d="m -160,44.4 c 30,0 58,
+            -18 87.7,-18 30.3,0 58.3,
+            18 87.3,18 30,0 58,-18 88,
+            -18 30,0 58,18 88,18 l 0,
+            34.5 -351,0 z" />
+        </defs>
+        <g class="parallax">
+          <use xlink:href="#gentle-wave"
+               x="50"
+               y="0"
+               fill="#4579e2" />
+          <use xlink:href="#gentle-wave"
+               x="50"
+               y="3"
+               fill="#3461c1" />
+          <use xlink:href="#gentle-wave"
+               x="50"
+               y="6"
+               fill="#2d55aa" />
+        </g>
+      </svg>
+    </div>
+    <!-- 内容区域 -->
+    <div class="content"
+         style="width:100%;height:88%;overflow:scroll">
+      <div class="login">
+        <!-- 标题 -->
+        <span class="title">北京师范大学微课教学研究中心</span>
+        <p class="login__title">阅读海洋</p>
+        <!-- 选择登录角色的图片按钮 -->
+        <div class="login__role-btn">
+          <transition name="rotate"
+                      mode="out-in">
+            <img class="login__avatar--teacher"
+                 @touchend.prevent="changeUserType"
+                 :src="loginAvatar"
+                 :key="userType"
+                 alt="用户角色头像">
+          </transition>
+        </div>
+        <!-- 登录角色文字 -->
+        <p class="login__role-text">{{loginRole}}</p>
+        <!-- 选择学校按钮 -->
+        <div class="login__location-btn"
+             @click.prevent="chooseSchool">
+          <img src="../../../static/images/location.png"
+               alt="地点选择图标"
+               width="20px">
+          <span class="location-school">学校：{{ selectedSchool }}</span>
+        </div>
+        <!-- 登录表单 -->
+        <div class="login__input-wrapper">
+          <input class="login__input"
+                 placeholder="请输入用户名"
+                 v-model="userName"
+                 @blur="IOSFix">
+          <div class="input-divider"></div>
+          <input class="login__input"
+                 placeholder="请输入用户密码"
+                 type="password"
+                 v-model="userPwd"
+                 @blur="IOSFix">
+        </div>
+        <div class="login__option">
+          <a class="login__remember-btn"
+             @touchend="remember = !remember">记住我<i :class="['icon', rememberIcon]"></i></a>
+          <a class="login__forget-btn"
+             @touchend.prevent="retrieveVisible = true">忘记密码?</a>
+        </div>
+        <div class="wxlogin">
+          <a @click="toWxLogin"><img class='wxlogin__icon'
+                 src='../../../static/images/wechat.svg'>快捷登录</a>
+        </div>
+        <mt-button type="primary"
+                   class="login__btn"
+                   :disabled="!loginValidate"
+                   @click="login">登录
+        </mt-button>
+        <!-- <mt-button type="primary"
+                   class="register__btn"
+                   @click="registerVisible = !registerVisible,selectSchool = false">还没有账号？免费注册
+        </mt-button> -->
+        <mt-button type="primary"
+                   class="register__btn"
+                   @click="jumpToRegister()">还没有账号？免费注册
+        </mt-button>
+      </div>
+
+    </div>
+    <!-- 同名选择号码picker 弹出层-->
+    <mt-popup v-model="phoneSelecting"
+              position="bottom"
+              class="picker-wrapper">
+      <mt-field label="选择你的号码"
+                v-model="nowPhoneNum"
+                readonly
+                disableClear></mt-field>
+      <mt-field label="密码"
+                placeholder="请输入密码"
+                type="password"
+                v-model="nowPassword"></mt-field>
+      <mt-button @click.native="phoneLogin"
+                 type="default"
+                 style="width:100%">登录</mt-button>
+      <mt-picker :slots="phoneSlots"
+                 @change="onPhoneChange"
+                 valueKey="phoneNum"></mt-picker>
+
+    </mt-popup>
+    <!-- 底部学校 picker 弹出层-->
+    <mt-popup v-model="selecting"
+              position="bottom"
+              class="picker-wrapper">
+      <mt-picker :slots="slots"
+                 @change="onValuesChange"
+                 valueKey="schoolName"></mt-picker>
+    </mt-popup>
+    <!-- 注册界面底部学校 picker 弹出层-->
+    <mt-popup v-model="select"
+              position="bottom"
+              class="picker-wrapper">
+      <mt-picker :slots="slot"
+                 @change="onChange"></mt-picker>
+    </mt-popup>
+    <!-- 忘记密码弹出层 -->
+    <div class="retrieve"
+         v-if="retrieveVisible"
+         style="width:100%;height:100%;">
+      <div class="retrieve__content">
+        <!-- 忘记密码 logo -->
+        <div class="retrieve__logo">
+          <img src="../../../static/images/retrieve.svg"
+               alt="找回密码图标">
+        </div>
+        <!-- 忘记密码表单 -->
+        <input type="text"
+               class="retrieve__input"
+               placeholder="请输入您的手机号"
+               @blur="IOSFix"
+               v-model="phone">
+        <input type="text"
+               class="retrieve__input"
+               placeholder="请输入验证码"
+               @blur="IOSFix"
+               v-model="verificationCode"
+               v-if="isVerify">
+        <input type="password"
+               class="retrieve__input"
+               placeholder="请输入您新密码"
+               @blur="IOSFix"
+               v-model="newPwd">
+        <input type="password"
+               class="retrieve__input"
+               placeholder="请确认您的新密码"
+               @blur="IOSFix"
+               v-model="confirmPwd">
+        <mt-button type="primary"
+                   class="retrieve-btn2"
+                   @click="getVerificationCode">获取验证码
+        </mt-button>
+        <mt-button type="primary"
+                   class="retrieve-btn"
+                   :disabled="!retrieveValidate"
+                   @click="retrievePwd">更改密码
+        </mt-button>
+        <!-- 返回按钮 -->
+        <button class="retrieve__quit"
+                @touchend="retrieveVisible = false"><i class="quit-icon"></i><span class="quit-text">返回</span></button>
+      </div>
+    </div>
+    <!-- 通过iframe来获取经纬度
+    <iframe id="geoPage" width=0 height=0 frameborder=0  style="display:none;" scrolling="no"
+              src="https://apis.map.qq.com/tools/geolocation?key=OB4BZ-D4W3U-B7VVO-4PJWW-6TKDJ-WPB77&referer=myapp">
+    </iframe> -->
+    <!--用户注册弹出层-->
+    <div class="register"
+         v-if="registerVisible"
+         style="width:100%;height:100%;overflow:scroll">
+      <div class="register__content">
+        <div class="register__logo">
+          <img src="../../../static/images/retrieve.svg"
+               alt="找回密码图标">
+        </div>
+        <!-- 注册表单 -->
+        <div class="register__location-btn"
+             @click.prevent="select = true"
+             v-show="!promotersVisible">
+          <img src="../../../static/images/location.png"
+               alt="地点选择图标"
+               width="20px">
+          <span class="location-place">地区选择</span>
+          <div style="font-size:12px;">{{selectedProvince}}/{{selectedCity}}</div>
+        </div>
+        <div class="register__location-btn"
+             v-show="promotersVisible">
+          <div style="font-size:12px;">{{registerProvince}}{{registerCity}}{{source}}</div>
+        </div>
+        <select v-model="gradeSelected"
+                @blur="IOSFix"
+                class="register__grade">
+          <option v-for="item in gradeItems"
+                  v-bind:value="item.value">{{item.text}}</option>
+        </select>
+        <input type="text"
+               class="register__input"
+               placeholder="请输入您的姓名"
+               @blur="IOSFix"
+               v-model="retrieveName">
+        <select v-model="sexSelected"
+                @blur="IOSFix"
+                class="register__grade">
+          <option v-for="item in sexItems"
+                  v-bind:value="item.value">{{item.text}}</option>
+        </select>
+        <input type="password"
+               class="register__input"
+               @blur="IOSFix"
+               placeholder="请输入您的密码"
+               v-model="newPwd">
+        <input type="password"
+               class="register__input"
+               @blur="IOSFix"
+               placeholder="请确认您的密码"
+               v-model="confirmPwd">
+        <input type="text"
+               class="register__input"
+               @blur="IOSFix"
+               placeholder="请输入您的身份证后六位数"
+               v-model="retrieveIdentity">
+        <input type="text"
+               class="register__input"
+               @blur="IOSFix"
+               placeholder="请输入您的就读学校"
+               v-model="nowSchool"
+               v-show="!promotersVisible">
+        <!--针对社区学校特殊显示，有来源source才有推广员（工作人员），所以用这个来做判断-->
+        <select v-model="promotersSelected"
+                @blur="IOSFix"
+                class="register__grade"
+                v-show="promotersVisible">
+          <option v-for="item in promoterItems"
+                  v-bind:value="item.value">{{item.text}}</option>
+        </select>
+        <mt-button type="primary"
+                   class="register-btn"
+                   @click="userRegister()">注册
+        </mt-button>
+        <!--返回按钮-->
+        <button class="register__quit"
+                @touchend="registerVisible = false"><i class="quit-icon"></i><span class="quit-text">返回</span></button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script type="text/javascript">
+// import AMap from "AMap"
+import Axios from "axios"
+import AES from "crypto-js/aes"
+import UTF8 from "crypto-js/enc-utf8"
+import Cookie from "js-cookie"
+import { Dialog } from "vant"
+import Promoters from "../../utils/promoters.js"
+import {
+  Indicator,
+  Toast,
+  MessageBox
+} from "mint-ui"
+import * as API from "../../api/api"
+
+import { locationObject } from "../../utils/location.js"
+import errorHandler from "../../mixins/errorHandler.js"
+import sourceList from "../../utils/source.js"
+export default {
+  mixins: [errorHandler],
+  data() {
+    return {
+      phone: "",
+      userName: "",
+      userPwd: "",
+      verificationCode: "",
+      retrieveName: "",
+      retrieveIdentity: "",
+      newPwd: "",
+      confirmPwd: "",
+      isVerify: false,
+      isGet: false,
+      loginRemember: false,
+      selecting: false,
+      phoneSelecting: false,
+      select: false,
+      retrieveVisible: false,
+      registerVisible: false,
+      registerProvince: "",
+      registerCity: "",
+      promotersVisible: false, // 推广员选项是否出现
+      userType: "user_type_student",
+      remember: true,
+      studentAvatar: require("../../../static/images/student-avatar.svg"),
+      teacherAvatar: require("../../../static/images/teacher-avatar.svg"),
+      userIp: "127.0.0.1",
+      locationObject: locationObject,
+      promoterItems: Promoters, // 推广员列表
+      promotersSelected: "1",
+      allSchools: [],
+      geoProvince: "",
+      geoCity: "",
+      selectedProvince: "",
+      selectedCity: "",
+      selectedProvinceId: 0,
+      selectedCityId: 0,
+      selectedSchoolId: 0,
+      selectedSchool: "",
+      sex: "",
+      nowPhoneNum: "",
+      nowPassword: "",
+      gradeItems: [
+        { text: "请选择年级", value: "-1" },
+        { text: "一年级", value: "1" },
+        { text: "二年级", value: "2" },
+        { text: "三年级", value: "3" },
+        { text: "四年级", value: "4" },
+        { text: "五年级", value: "5" },
+        { text: "六年级", value: "6" }
+      ],
+      gradeSelected: "-1",
+      sexItems: [
+        { text: "请选择您的性别", value: "-1" },
+        { text: "男", value: "男" },
+        { text: "女", value: "女" }
+      ],
+      sexSelected: "-1",
+      nowSchool: "",
+      phoneSlots: [{
+        values: [],
+        className: "picker-slot"
+      }],
+      // 底部选择器数据
+      slots: [
+        {
+          flex: 1,
+          values: [],
+          className: "picker-slot",
+          textAlign: "center",
+          defaultIndex: 0
+        },
+        {
+          flex: 1,
+          values: [],
+          className: "picker-slot",
+          textAlign: "center",
+          defaultIndex: 0
+        },
+        {
+          flex: 2,
+          values: [],
+          className: "picker-slot",
+          textAlign: "center",
+          defaultIndex: 0
+        }
+      ],
+      // 底部选择器数据(上下两个不同)
+      slot: [
+        {
+          flex: 1,
+          values: [],
+          className: "picker-slot",
+          textAlign: "center",
+          defaultIndex: 0
+        },
+        {
+          flex: 1,
+          values: [],
+          className: "picker-slot",
+          textAlign: "center",
+          defaultIndex: 0
+        }
+      ],
+      lat: 0,
+      lng: 0,
+      source: null,
+      sourceObject: {},
+      sourceList: sourceList
+    }
+  },
+  watch: {
+    /* 当底部 picker 弹出时，固定背景，防止背景滚动 */
+    selecting: function (val) {
+      if (val) {
+        document.body.style.position = "fixed"
+      } else {
+        document.body.style.position = "static"
+      }
+    },
+    /* 当底部 picker 弹出时，固定背景，防止背景滚动(上下两个不同) */
+    select: function (val) {
+      if (val) {
+        document.body.style.position = "fixed"
+      } else {
+        document.body.style.position = "static"
+      }
+      this.selectSchool = true
+    }
+  },
+  computed: {
+    rememberIcon() {
+      return this.remember ? "icon-light" : "icon-unlight"
+    },
+    // 登录角色文字
+    loginRole() {
+      return this.userType === "user_type_student" ? "我是学生" : "我是老师"
+    },
+    loginAvatar() {
+      return this.userType === "user_type_student" ? this.studentAvatar : this.teacherAvatar
+    },
+    // 登录表单验证
+    loginValidate() {
+      return this.userName.length > 0 && this.userPwd.length > 0 && this.selectedSchool !== "请选择您的学校"
+    },
+    // 忘记密码表单验证
+    // retrieveValidate() {
+    //   return this.retrieveName.length > 0 && this.retrieveIdentity.length > 0 && this.newPwd.length > 0 && this.confirmPwd.length > 0 && this.confirmPwd === this.newPwd
+    // },
+    retrieveValidate() {
+      return this.newPwd.length > 0 && this.confirmPwd.length > 0 && this.confirmPwd === this.newPwd
+    },
+    // 获取定位省份的在本地数据里的 index
+    geoProvinceIndex() {
+      return this.slots[0].values.findIndex((element) => {
+        return element.includes(this.geoProvince.replace(/省/, ""))
+      })
+    },
+    // 获取定位城市的在本地数据里的 index
+    geoCityIndex() {
+      return this.slots[1].values.findIndex((element) => {
+        return element.includes(this.geoCity.replace(/市/, ""))
+      })
+    },
+    // 提取当前地区的所有可用学校
+    availableSchools() {
+      let arr = this.allSchools.filter((item) => {
+        return item.provinceId === this.selectedProvinceId && item.cityId === this.selectedCityId
+      })
+      arr.unshift({
+        schoolId: 0,
+        schoolName: "点击选择学校"
+      },
+      {
+        schoolId: 1000000,
+        schoolName: "阅读海洋小学"
+      })
+      return arr
+    }
+  },
+  methods: {
+    // 选择学校
+    chooseSchool() {
+      this.selecting = true
+      localStorage.removeItem("school")
+      localStorage.removeItem("schoolId")
+    },
+    getCheckNum(type) {
+      Axios({
+        url: API.getCheckNum,
+        method: "POST",
+        params: {
+          phone: this.phone,
+          type: type
+        },
+        headers: {
+          "Authorization": this.token
+        }
+      }).then(res => {
+        if (res.data.code === 200) {
+          alert("验证码已发送")
+        }
+      }).catch(err => {
+        console.log(err)
+      })
+    },
+
+    getVerificationCode() {
+      var type = "forgotPass"
+      if (this.phone === "") {
+        alert("手机号不能为空")
+        return false
+      } else if (this.phone.length !== 11) {
+        alert("手机号必须11位数字")
+        return false
+      } else {
+        this.getCheckNum(type)
+        this.isVerify = true
+      }
+    },
+    jumpToRegister() {
+      location.href = API.goRegister
+    },
+    // 用户注册提交
+    userRegister() {
+      var message = "<h5>初次注册用户拥有3天试用期</h5><h5>个人学生在主页登录需要选择<span style='color:red'>'阅读海洋小学'</span></h5><h5>个人学生也可以在个人学生通道登录</h5>"
+      if (this.source !== null && this.sourceList.indexOf(this.source) === -1) {
+        this.nowSchool = this.source
+        this.registerProvince = this.sourceObject.province
+        this.registerCity = this.sourceObject.city
+        message = "<h5>初次注册用户拥有3天试用期</h5><h5>个人学生在主页登录需要选择<br><span style='color:red'>'" + this.registerProvince + this.registerCity + this.source + "'</span></h5><h5>个人学生也可以在个人学生通道登录</h5>"
+      }
+      var name = this.retrieveName
+      var password = this.newPwd
+      var rePassword = this.confirmPwd
+      var sex = this.sexSelected
+      var idcard = this.retrieveIdentity
+      var province = this.registerProvince === "" ? this.selectedProvince : this.registerProvince
+      var city = this.registerCity === "" ? this.selectedCity : this.registerCity
+      var gradeId = this.gradeSelected
+      var remarks = this.nowSchool === "" ? "阅读海洋小学" : this.nowSchool
+      if (name === "" || password === "" || sex === "-1" || idcard === "" || gradeId === "-1" || remarks === "" || (this.source === null && (province === "" || city === ""))) {
+        Toast({
+          message: "您还有信息未填",
+          position: "center",
+          duration: 1500
+        })
+      } else if (password !== rePassword) {
+        Toast({
+          message: "您两次输入的密码不一致",
+          position: "center",
+          duration: 1500
+        })
+      } else {
+        Dialog.confirm(message).then(action => {
+          Axios({
+            url: API.userRegister,
+            method: "post",
+            params: {
+              phoneNum: this.phone,
+              name: this.retrieveName,
+              password: this.newPwd,
+              sex: this.sexSelected,
+              idcard: this.retrieveIdentity,
+              province: province,
+              city: city,
+              gradeId: this.gradeSelected,
+              remarks: this.nowSchool,
+              source: this.source,
+              promoters: this.promotersSelected
+            },
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded"
+            }
+          }).then((res) => {
+            if (res.data.code === 200) {
+              /* 用户成功注册则记住信息，自动填充 */
+              var localRO = JSON.stringify({
+                "userName": this.retrieveName,
+                "password": this.newPwd
+              }).toString()
+              localStorage.setItem("RO", localRO)
+              if (this.source) {
+                if (this.sourceList.indexOf(this.source) !== -1) {
+                  localStorage.setItem("schoolId", 1000000)
+                  localStorage.setItem("school", "阅读海洋小学")
+                } else {
+                  localStorage.setItem("schoolId", this.sourceObject.schoolId)
+                  localStorage.setItem("school", this.source)
+                }
+              } else {
+                localStorage.setItem("schoolId", 1000000)
+                localStorage.setItem("school", "阅读海洋小学")
+              }
+
+              if (this.source === null) {
+                Toast({
+                  message: "注册成功",
+                  position: "top",
+                  duration: 1500
+                })
+                setTimeout(function () {
+                  window.location.reload()
+                }, 2000)
+              } else {
+                Toast({
+                  message: "注册成功,请关注阅读海洋智能阅读平台",
+                  position: "top",
+                  duration: 1500
+                })
+                setTimeout(function () {
+                  // 后期可能会失效
+                  window.location.href = "http://mp.weixin.qq.com/mp/profile_ext?action=home&__biz=MzUxOTU3MDg5Ng==&scene=110#wechat_redirect"
+                }, 2000)
+              }
+            } else {
+              Toast({
+                message: res.data.result,
+                position: "top",
+                duration: 1500
+              })
+            }
+          }).catch((err) => {
+            console.log(err)
+          })
+        })
+      }
+    },
+    // 改变登录角色
+    changeUserType: function (event) {
+      this.userType = this.userType === "user_type_student" ? "user_type_teacher" : "user_type_student"
+    },
+    // 底部选择菜单事件
+    onValuesChange(picker, values) {
+      if (values[0] && this.locationObject[values[0]]) {
+        this.selectedProvince = values[0]
+        picker.setSlotValues(1, Object.keys(this.locationObject[values[0]]))
+      }
+      if (values[1] && this.locationObject[values[0]][values[1]]) {
+        this.selectedCity = values[1]
+        let idArray = JSON.parse(this.locationObject[values[0]][values[1]])
+        this.selectedProvinceId = idArray[0]
+        this.selectedCityId = idArray[1]
+        picker.setSlotValues(2, this.availableSchools)
+      }
+      // 获取url上的学校信息
+      var school = this.getQueryString("school")
+
+      if (school !== null) {
+        var arr = school.split(",")
+        this.selectedSchoolId = arr[1]
+        this.selectedSchool = arr[0]
+      } else if (values[2]) {
+        if (localStorage.getItem("school") && localStorage.getItem("schoolId")) {
+          this.selectedSchool = localStorage.getItem("school")
+          this.selectedSchoolId = localStorage.getItem("schoolId")
+        } else {
+          this.selectedSchool = values[2].schoolName
+          this.selectedSchoolId = values[2].schoolId
+        }
+      }
+    },
+    // 底部菜单栏
+    onChange(picker, values) {
+      if (values[0] && this.locationObject[values[0]]) {
+        this.selectedProvince = values[0]
+        picker.setSlotValues(1, Object.keys(this.locationObject[values[0]]))
+      }
+      if (values[1] && this.locationObject[values[0]][values[1]]) {
+        this.selectedCity = values[1]
+        let idArray = JSON.parse(this.locationObject[values[0]][values[1]])
+        this.selectedProvinceId = idArray[0]
+        this.selectedCityId = idArray[1]
+        picker.setSlotValues(2, this.availableSchools)
+      }
+    },
+    // 同名时选择号码弹窗
+    onPhoneChange(picker, values) {
+      this.nowPhoneNum = values[0]
+      console.log(this.nowPhoneNum)
+    },
+    phoneLogin() {
+      Axios({
+        url: API.phoneLogin,
+        method: "POST",
+        params: {
+          userName: this.userName,
+          password: this.nowPassword,
+          schoolId: this.selectedSchoolId,
+          userType: this.userType,
+          lat: this.lat === 0 ? sessionStorage.getItem(API.latKey) : this.lat,
+          lng: this.lng === 0 ? sessionStorage.getItem(API.lngKey) : this.lng,
+          phone: this.nowPhoneNum
+        },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        }
+      }).then((res) => {
+        if (res.status === 200) {
+          Indicator.close()
+          // 存储 userId 到 sessionStorage
+          sessionStorage.setItem(API.userIdKey, res.data.userId)
+          // 存储 token 到 sessionStorage
+          sessionStorage.setItem(API.tokenKey, res.data.token)
+          // 存储 schoolId 到 sessionStorage
+          sessionStorage.setItem(API.schoolIdKey, this.selectedSchoolId)
+          // 存储 userType 到 sessionStorage
+          sessionStorage.setItem(API.schoolTypeKey, res.data.schoolType)
+          // 存储 schoolType 到 sessionStorage
+          sessionStorage.setItem(API.userTypeKey, this.userType)
+          // 存储 lat 到 sessionStorage
+          sessionStorage.setItem(API.latKey, this.lat)
+          // 存储 lng 到 sessionStorage
+          sessionStorage.setItem(API.lngKey, this.lng)
+          // 设置记住密码
+          if (this.remember) {
+            var secureText = AES.encrypt(JSON.stringify({
+              userName: this.userName,
+              password: this.userPwd,
+              schoolId: this.selectedSchoolId,
+              userType: this.userType,
+              latKey: this.lat === 0 ? sessionStorage.getItem(API.latKey) : this.lat,
+              lngKey: this.lng === 0 ? sessionStorage.getItem(API.lngKey) : this.lng,
+              token: res.data.token,
+              schoolType: res.data.schoolType,
+              userId: res.data.userId
+            }), API.cookieKey)
+            Cookie.set(API.cookieKey, secureText.toString(), {
+              expires: 7
+            })
+          }
+          // 更新localStorage
+          var localRO = JSON.stringify({
+            "userName": this.userName,
+            "password": this.userPwd
+          }).toString()
+          localStorage.setItem("RO", localRO)
+          localStorage.setItem("schoolId", this.selectedSchoolId)
+          localStorage.setItem("school", this.selectedSchool)
+          localStorage.setItem("schoolType", res.data.schoolType)
+          // var nameForSanke = this.userName
+          // 清空输入框
+          this.userName = ""
+          this.userPwd = ""
+          // this.selectedSchoolId = ""
+          // console.log(res)
+          if (res.data.wxBind) { // 提醒用户绑定微信
+            Dialog.confirm("是否绑定微信?").then(action => {
+              Axios({
+                url: API.WxBind,
+                method: "POST",
+                params: {
+                  wxBind: res.data.wxBind
+                },
+                headers: {
+                  "Authorization": this.token,
+                  "Content-Type": "application/x-www-form-urlencoded"
+                }
+              }).then((res) => {
+                // console.log(res)
+                if (res.data.code === 200) {
+                  Toast({
+                    message: "绑定成功",
+                    position: "center",
+                    duration: 2000
+                  })
+                  // 登录成功之后跳转到
+                  document.location.assign("/ReadingOcean/wechat/home")
+                } else if (res.data.code === 401) {
+                  Toast({
+                    message: "绑定失败",
+                    position: "center",
+                    duration: 2000
+                  })
+                }
+              }).catch((err) => {
+                this.errorHandler(err)
+              })
+            }).catch((err) => {
+              if (err === "cancel") { // 取消的回调
+                document.location.assign("/ReadingOcean/wechat/home")
+              }
+            })
+          } else {
+            // 需要判断是否完善信息
+            Axios({
+              url: API.verifySankeInfoIsFinish,
+              method: "GET",
+              params: {
+                userId: res.data.userId
+              },
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+              }
+            }).then((res) => {
+              if (res.data.code === 200) {
+                if (res.data.data === "failure") {
+                  Dialog.confirm({
+                    title: "确认提示",
+                    message: "您尚未完善信息 无法使用完整功能 请前往个人中心的个人信息进行完善"
+                  }).then(action => {
+                    if (action === "confirm") {
+                      // 登录成功之后跳转到
+                      document.location.assign("/ReadingOcean/wechat/home")
+                    }
+                  })
+                } else {
+                  // 登录成功之后跳转到
+                  document.location.assign("/ReadingOcean/wechat/home")
+                }
+              } else if (res.data.code === 401) {
+                Toast({
+                  message: "失败",
+                  position: "center",
+                  duration: 2000
+                })
+              }
+            }).catch((err) => {
+              this.errorHandler(err)
+            })
+          }
+        } else {
+          Toast({
+            message: "失败",
+            position: "center",
+            duration: 2000
+          })
+        }
+      }).catch((err) => {
+        this.errorHandler(err)
+      })
+    },
+    // 登录表单提交 (先进行判断 1如果是普通用户直接登录 2 如果是散客登录那么先判断是否重名 ：访问接口->如果不重名直接用新接口登录 否则显示弹窗来选择号码再输入密码进行登录)
+    login() {
+      // 先判断是不是散客
+      Axios({
+        url: API.judgeDuplicateName, /// mobileUser/judgeDuplicateName
+        method: "POST",
+        params: {
+          name: this.userName,
+          password: this.userPwd,
+          schoolId: this.selectedSchoolId
+        },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        }
+      }).then((res) => {
+        if (res.status === 200) {
+          console.log(res)
+          if (res.data.code === 200) { // 说明是散客
+            if (res.data.result === "NoDuplicate") {
+              Axios({
+                url: API.userLogin,
+                method: "POST",
+                params: {
+                  userName: this.userName,
+                  password: this.userPwd,
+                  schoolId: this.selectedSchoolId,
+                  userType: this.userType,
+                  lat: this.lat === 0 ? sessionStorage.getItem(API.latKey) : this.lat,
+                  lng: this.lng === 0 ? sessionStorage.getItem(API.lngKey) : this.lng
+                },
+                headers: {
+                  "Content-Type": "application/x-www-form-urlencoded"
+                }
+              }).then((res) => {
+                if (res.status === 200) {
+                  Indicator.close()
+                  // 存储 userId 到 sessionStorage
+                  sessionStorage.setItem(API.userIdKey, res.data.userId)
+                  // 存储 token 到 sessionStorage
+                  sessionStorage.setItem(API.tokenKey, res.data.token)
+                  // 存储 schoolId 到 sessionStorage
+                  sessionStorage.setItem(API.schoolIdKey, this.selectedSchoolId)
+                  // 存储 userType 到 sessionStorage
+                  sessionStorage.setItem(API.schoolTypeKey, res.data.schoolType)
+                  // 存储 schoolType 到 sessionStorage
+                  sessionStorage.setItem(API.userTypeKey, this.userType)
+                  // 存储 lat 到 sessionStorage
+                  sessionStorage.setItem(API.latKey, this.lat)
+                  // 存储 lng 到 sessionStorage
+                  sessionStorage.setItem(API.lngKey, this.lng)
+                  // 设置记住密码
+                  if (this.remember) {
+                    var secureText = AES.encrypt(JSON.stringify({
+                      userName: this.userName,
+                      password: this.userPwd,
+                      schoolId: this.selectedSchoolId,
+                      userType: this.userType,
+                      latKey: this.lat === 0 ? sessionStorage.getItem(API.latKey) : this.lat,
+                      lngKey: this.lng === 0 ? sessionStorage.getItem(API.lngKey) : this.lng,
+                      token: res.data.token,
+                      schoolType: res.data.schoolType,
+                      userId: res.data.userId
+                    }), API.cookieKey)
+                    Cookie.set(API.cookieKey, secureText.toString(), {
+                      expires: 7
+                    })
+                  }
+                  // 更新localStorage
+                  var localRO = JSON.stringify({
+                    "userName": this.userName,
+                    "password": this.userPwd
+                  }).toString()
+                  localStorage.setItem("RO", localRO)
+                  localStorage.setItem("schoolId", this.selectedSchoolId)
+                  localStorage.setItem("school", this.selectedSchool)
+                  localStorage.setItem("schoolType", res.data.schoolType)
+                  // var nameForSanke = this.userName
+                  // 清空输入框
+                  this.userName = ""
+                  this.userPwd = ""
+                  // this.selectedSchoolId = ""
+                  // console.log(res)
+                  if (res.data.wxBind) { // 提醒用户绑定微信
+                    Dialog.confirm("是否绑定微信?").then(action => {
+                      Axios({
+                        url: API.WxBind,
+                        method: "POST",
+                        params: {
+                          wxBind: res.data.wxBind
+                        },
+                        headers: {
+                          "Authorization": this.token,
+                          "Content-Type": "application/x-www-form-urlencoded"
+                        }
+                      }).then((res) => {
+                        // console.log(res)
+                        if (res.data.code === 200) {
+                          Toast({
+                            message: "绑定成功",
+                            position: "center",
+                            duration: 2000
+                          })
+                          // 登录成功之后跳转到
+                          setTimeout(function () {
+                            document.location.assign("/ReadingOcean/wechat/home")
+                          }, 2000)
+                        } else if (res.data.code === 401) {
+                          Toast({
+                            message: "绑定失败",
+                            position: "center",
+                            duration: 2000
+                          })
+                        }
+                      }).catch((err) => {
+                        this.errorHandler(err)
+                      })
+                    }).catch((err) => {
+                      if (err === "cancel") { // 取消的回调
+                        document.location.assign("/ReadingOcean/wechat/home")
+                      }
+                    })
+                  } else {
+                    // 需要判断是否完善信息
+                    Axios({
+                      url: API.verifySankeInfoIsFinish,
+                      method: "GET",
+                      params: {
+                        userId: res.data.userId
+                      },
+                      headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                      }
+                    }).then((res) => {
+                      if (res.data.code === 200) {
+                        if (res.data.data === "failure") {
+                          Dialog.confirm({
+                            title: "确认提示",
+                            message: "您尚未完善信息或者个人信息填写有误(姓名必须全为汉字,身份证后六位不为空) 无法使用完整功能 请前往个人中心的个人信息进行完善"
+                          }).then(action => {
+                            if (action === "confirm") {
+                              // 登录成功之后跳转到
+                              document.location.assign("/ReadingOcean/wechat/home")
+                            }
+                          })
+                        } else {
+                          // 登录成功之后跳转到
+                          setTimeout(function () {
+                            document.location.assign("/ReadingOcean/wechat/home")
+                          }, 1000)
+                        }
+                      } else if (res.data.code === 401) {
+                        Toast({
+                          message: "失败",
+                          position: "center",
+                          duration: 2000
+                        })
+                      }
+                    }).catch((err) => {
+                      this.errorHandler(err)
+                    })
+                  }
+                } else {
+                  Toast({
+                    message: "失败",
+                    position: "center",
+                    duration: 2000
+                  })
+                }
+              }).catch((err) => {
+                this.errorHandler(err)
+              })
+            } else {
+              Dialog.confirm({
+                title: "确认提示",
+                message: "您有同名用户 请选择您自己的手机号进行登录"
+              }).then(action => {
+                if (action === "confirm") {
+                  this.phoneSelecting = true// 打开弹窗
+                  var phoneList = []// 获取同名的所有号码
+                  for (var i = 0; i < res.data.data.length; i++) {
+                    phoneList[i] = res.data.data[i].phone
+                  }
+                  console.log(phoneList)
+                  this.phoneSlots[0].values = phoneList
+                }
+              })
+            }
+          } else { // 普通用戶
+            Indicator.open({
+              "text": "登录中..."
+            })
+            Axios({
+              url: API.userLogin,
+              method: "POST",
+              params: {
+                userName: this.userName,
+                password: this.userPwd,
+                schoolId: this.selectedSchoolId,
+                userType: this.userType,
+                lat: this.lat === 0 ? sessionStorage.getItem(API.latKey) : this.lat,
+                lng: this.lng === 0 ? sessionStorage.getItem(API.lngKey) : this.lng
+              },
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+              }
+            }).then((res) => {
+              Indicator.close()
+              // 存储 userId 到 sessionStorage
+              sessionStorage.setItem(API.userIdKey, res.data.userId)
+              // 存储 token 到 sessionStorage
+              sessionStorage.setItem(API.tokenKey, res.data.token)
+              // 存储 schoolId 到 sessionStorage
+              sessionStorage.setItem(API.schoolIdKey, this.selectedSchoolId)
+              // 存储 userType 到 sessionStorage
+              sessionStorage.setItem(API.schoolTypeKey, res.data.schoolType)
+              // 存储 schoolType 到 sessionStorage
+              sessionStorage.setItem(API.userTypeKey, this.userType)
+              // 存储 lat 到 sessionStorage
+              sessionStorage.setItem(API.latKey, this.lat)
+              // 存储 lng 到 sessionStorage
+              sessionStorage.setItem(API.lngKey, this.lng)
+              // 设置记住密码
+              if (this.remember) {
+                var secureText = AES.encrypt(JSON.stringify({
+                  userName: this.userName,
+                  password: this.userPwd,
+                  schoolId: this.selectedSchoolId,
+                  userType: this.userType,
+                  latKey: this.lat === 0 ? sessionStorage.getItem(API.latKey) : this.lat,
+                  lngKey: this.lng === 0 ? sessionStorage.getItem(API.lngKey) : this.lng,
+                  token: res.data.token,
+                  schoolType: res.data.schoolType,
+                  userId: res.data.userId
+                }), API.cookieKey)
+                Cookie.set(API.cookieKey, secureText.toString(), {
+                  expires: 7
+                })
+              }
+              // 更新localStorage
+              var localRO = JSON.stringify({
+                "userName": this.userName,
+                "password": this.userPwd
+              }).toString()
+              localStorage.setItem("RO", localRO)
+              localStorage.setItem("schoolId", this.selectedSchoolId)
+              localStorage.setItem("school", this.selectedSchool)
+              localStorage.setItem("schoolType", res.data.schoolType)
+              // var nameForSanke = this.userName
+              // 清空输入框
+              this.userName = ""
+              this.userPwd = ""
+              // this.selectedSchoolId = ""
+              // console.log(res)
+              if (res.data.wxBind) { // 提醒用户绑定微信
+                MessageBox.confirm("是否绑定微信?").then(action => {
+                  Axios({
+                    url: API.WxBind,
+                    method: "POST",
+                    params: {
+                      wxBind: res.data.wxBind
+                    },
+                    headers: {
+                      "Authorization": this.token,
+                      "Content-Type": "application/x-www-form-urlencoded"
+                    }
+                  }).then((res) => {
+                    // console.log(res)
+                    if (res.data.code === 200) {
+                      Toast({
+                        message: "绑定成功",
+                        position: "center",
+                        duration: 2000
+                      })
+                      // 登录成功之后跳转到
+                      setTimeout(function () {
+                        document.location.assign("/ReadingOcean/wechat/home")
+                      }, 2000)
+                    } else if (res.data.code === 401) {
+                      Toast({
+                        message: "绑定失败",
+                        position: "center",
+                        duration: 2000
+                      })
+                    }
+                  }).catch((err) => {
+                    this.errorHandler(err)
+                  })
+                }).catch((err) => {
+                  if (err === "cancel") { // 取消的回调
+                    document.location.assign("/ReadingOcean/wechat/home")
+                  }
+                })
+              } else {
+                document.location.assign("/ReadingOcean/wechat/home")
+              }
+            }).catch((err) => {
+              Indicator.close()
+              this.errorHandler(err)
+              if (err.response.data.errorCode === "-8") {
+                sessionStorage.setItem(API.userIdKey, err.response.data.userId)
+                sessionStorage.setItem(API.schoolIdKey, this.selectedSchoolId)
+                setTimeout(function () {
+                  document.location.assign("/ReadingOcean/wechat/wechatPay")
+                }, 2000)
+              }
+            })
+          }
+        }
+      }).catch((err) => {
+        this.errorHandler(err)
+      })
+    },
+    // 修改密码表单提交
+    retrievePwd() {
+      // console.log(this.phone + "---" + this.retrieveIdentity + "---" + this.verificationCode + "---" + this.newPwd)
+      Axios({
+        // url: API.retrievePwd,
+        url: API.forgetPassword,
+        method: "post",
+        params: {
+          userGroup: "sanke",
+          phoneNum: this.phone,
+          idcard: "",
+          verificationCode: this.verificationCode,
+          userName: "",
+          newPassword: this.newPwd
+        },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        }
+      }).then((res) => {
+        if (res.data.code === 200) {
+          Toast({
+            message: "新密码设置成功",
+            position: "top",
+            duration: 1500
+          })
+          // 清空输入框
+          this.newPwd = ""
+          this.confirmPwd = ""
+          this.retrieveName = ""
+          this.retrieveIdentity = ""
+          setTimeout(() => {
+            this.retrieveVisible = false
+          }, 1500)
+        } else {
+          alert("修改失败")
+        }
+      }).catch((err) => {
+        this.errorHandler(err)
+      })
+    },
+    getQueryString(name) {
+      var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i")
+      var r = window.location.search.substr(1).match(reg)
+      if (r != null) return decodeURI(r[2]); return null
+    },
+    /* 修复ios端按键错位的问题，后期需要整体优化 */
+    IOSFix() {
+      document.activeElement.scrollIntoViewIfNeeded()
+    },
+    /* 微信快捷登录 */
+    toWxLogin() {
+      document.location.assign("/ReadingOcean/wechat/wechatLogin?lat=" + this.lat + "&lng=" + this.lng)
+    }
+  },
+  created() {
+    // 获取来源
+    this.source = this.getQueryString("source")
+    // console.log(this.source)
+    if (this.source) {
+      Axios({
+        url: API.querySource,
+        method: "GET",
+        params: {
+          source: this.source
+        },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        }
+      }).then(res => {
+        this.sourceObject = res.data.data
+      }).catch(err => {
+        console.log(err)
+        Toast({
+          message: "该推广二维码失效",
+          position: "top",
+          duration: 1500
+        })
+      })
+      this.registerVisible = true
+      this.promotersVisible = true
+      this.registerProvince = this.sourceObjectprovince
+      this.registerCity = this.sourceObject.city
+    }
+    // AMap.plugin(["AMap.Geolocation"], () => {
+    //   // console.log(this)
+    //   var geolocation = new AMap.Geolocation()
+    //   geolocation.getCityInfo(item => {
+    //     console.log(item)
+    //   })
+    // })
+    Axios({
+      url: "https://webapi.amap.com/maps/ipCity?key=6bc510c8eb6bfe8563d381277f059317",
+      method: "GET",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      }
+    }).then(res => {
+      let result = JSON.parse((res.data).replace("(", "").replace(")", "").replace(";", ""))
+      this.lat = result.center[1]
+      this.lng = result.center[0]
+      this.geoProvince = result.province.replace(/省/, "")
+      this.slots[0].defaultIndex = this.geoProvinceIndex
+      // 注册页面底部选择器
+      this.slot[0].defaultIndex = this.slots[0].defaultIndex
+      // 定位成功后，底部选择器默认选择到当前省份
+      if (this.locationObject[this.geoProvince]) {
+        this.slots[1].values = Object.keys(this.locationObject[this.geoProvince])
+        // this.slot[1].values = Object.keys(this.locationObject[this.geoProvince])
+      }
+      // 定位成功后，底部选择器默认选择到当前城市
+      this.geoCity = result.city.replace(/市/, "")
+      this.slots[1].defaultIndex = this.geoCityIndex
+      // 注册页面底部选择器
+      this.slot[1].defaultIndex = this.slots[1].defaultIndex
+    }).catch(err => {
+      console.log(err)
+    })
+    // 获取当前url上的身份
+    var UserIdentity = this.getQueryString("userType")
+    if (UserIdentity === "user_type_teacher") {
+      this.userType = "user_type_teacher"
+    } else {
+      this.userType = "user_type_student"
+    }
+    // 获取当前url上的名字
+    var name = this.getQueryString("name")
+    if (name !== null) {
+      this.userName = name
+    }
+    // 获取 cookie 中加密的用户登录信息
+    var remCookie = Cookie.get(API.cookieKey)
+    if (remCookie) {
+      // 如果 cookie 存在，则解密 cookie 并解析成对象
+      remCookie = JSON.parse(AES.decrypt(remCookie, API.cookieKey).toString(UTF8))
+      if (UserIdentity === remCookie.userType || UserIdentity === null) {
+        // 尝试用之前的信息登录
+        Axios({
+          url: API.userLogin,
+          method: "POST",
+          params: {
+            userName: remCookie.userName,
+            password: remCookie.password,
+            schoolId: remCookie.schoolId,
+            userType: remCookie.userType,
+            lat: this.lat === 0 || !this.lat ? remCookie.latKey : this.lat,
+            lng: this.lng === 0 || !this.lat ? remCookie.lngKey : this.lng
+          },
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          }
+        }).then(res => {
+          sessionStorage.setItem(API.schoolTypeKey, res.data.schoolType)
+          sessionStorage.setItem(API.userIdKey, res.data.userId)
+          sessionStorage.setItem(API.tokenKey, res.data.token)
+          sessionStorage.setItem(API.schoolIdKey, remCookie.schoolId)
+          sessionStorage.setItem(API.userTypeKey, remCookie.userType)
+          sessionStorage.setItem(API.latKey, remCookie.latKey)
+          sessionStorage.setItem(API.lngKey, remCookie.lngKey)
+          // 更新cookie，使其中的token不会过期
+          var secureText = AES.encrypt(JSON.stringify({
+            userName: remCookie.userName,
+            password: remCookie.password,
+            schoolId: remCookie.schoolId,
+            schoolType: remCookie.schoolType,
+            userType: remCookie.userType,
+            latKey: this.lat === 0 ? remCookie.latKey : this.lat,
+            lngKey: this.lng === 0 ? remCookie.lngKey : this.lng,
+            token: res.data.token,
+            userId: res.data.userId
+          }), API.cookieKey)
+          Cookie.set(API.cookieKey, secureText.toString(), {
+            expires: 7
+          })
+          // 跳转至主界面
+          document.location.assign("/ReadingOcean/wechat/home")
+        }).catch(err => {
+          console.log(err)
+          // 登录失败则清除 cookie
+          Cookie.remove(API.cookieKey)
+        })
+      }
+    }
+    this.slots[0].values = Object.keys(this.locationObject)
+    this.slot[0].values = Object.keys(this.locationObject)
+    // 获取所有学校
+    Axios.get(API.getAllSchoolData)
+      .then((res) => {
+        if (res.data.code === 200) {
+          // 拿到所有学校的数据
+          this.allSchools = res.data.data
+          this.slots[2].values = this.availableSchools
+        }
+      }).catch((err) => {
+        this.$nextTick(() => {
+          Toast({
+            message: "无法获取学校信息",
+            position: "top",
+            duration: 1500
+          })
+        })
+        console.log(err)
+      })
+    /* 自动填充 */
+    if (localStorage.getItem("RO")) {
+      var RO = JSON.parse(localStorage.getItem("RO"))
+      this.userName = RO.userName
+      this.userPwd = RO.password
+    }
+  },
+  mounted() {
+    /* 解决安卓输入法弹出遮盖表单问题 */
+    if (/Android [4-6]/.test(navigator.appVersion)) {
+      window.addEventListener("resize", function () {
+        if (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA") {
+          setTimeout(function () {
+            document.activeElement.scrollIntoViewIfNeeded()
+          }, 0)
+        }
+      })
+    } else {
+      // document.activeElement.scrollIntoViewIfNeeded()
+      document.documentElement.style.position = "fixed"
+    }
+    // 第一次登录时提醒
+    Toast({
+      message: "点击头像切换登录角色",
+      position: "top",
+      duration: 3000
+    })
+  }
+}
+</script>
+<style lang="css">
+::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background-color: #2d55aa;
+}
+
+.app {
+  width: 100%;
+  height: 100%;
+}
+
+/* 改写 Mint-UI Toast 层级 */
+.mint-toast {
+  z-index: 3000 !important;
+}
+
+/* SVG 波浪动画 */
+.parallax > use {
+  animation: move-forever 12s linear infinite;
+}
+
+.parallax > use:nth-child(1) {
+  animation-delay: -2s;
+}
+
+.parallax > use:nth-child(2) {
+  animation-delay: -2s;
+  animation-duration: 5s;
+}
+
+.parallax > use:nth-child(3) {
+  animation-delay: -4s;
+  animation-duration: 3s;
+}
+
+@keyframes move-forever {
+  0% {
+    transform: translate(-90px, 0%);
+  }
+  100% {
+    transform: translate(85px, 0%);
+  }
+}
+
+/* Vue 过渡效果类名 */
+.rotate-enter-active,
+.rotate-leave-active {
+  transition: all 0.3s linear;
+}
+
+.rotate-enter,
+.rotate-leave-active {
+  transform: rotateY(90deg);
+  opacity: 0;
+}
+
+/* SVG 波浪 */
+.wave {
+  background-color: #fff;
+}
+
+.wave__image {
+  display: block;
+  width: 100%;
+  height: 60px;
+  font-size: 0;
+  margin: 0;
+  border: 0;
+}
+
+.content {
+  position: relative;
+  height: calc(100% - 70px);
+  padding: 0;
+  color: #eee;
+  text-align: center;
+  background-color: #2d55aa;
+  font-size: 0;
+}
+
+/* 登录区域 */
+.login {
+  width: 100%;
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: lighter;
+}
+.login__title {
+  font-size: 2.5rem;
+  font-weight: lighter;
+  margin: 0 0 15px 0;
+}
+
+.login__role-btn {
+  position: relative;
+  height: 64px;
+  margin: 0;
+  text-align: center;
+}
+
+.login__role-text {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.login-avatar__student,
+.login__avatar--teacher {
+  width: 64px;
+  position: absolute;
+  margin: 0 auto;
+  left: 0;
+  right: 0;
+}
+
+.login__input-wrapper {
+  width: 70%;
+  padding: 20px 5%;
+  margin: 0 auto 10px auto;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px #525252;
+  background-color: #ffffff;
+}
+
+.input-divider {
+  height: 1px;
+  width: 100%;
+  background-color: #e5e8eb;
+  margin: 5px auto;
+}
+
+.login__input::-webkit-input-placeholder {
+  color: #d0d0d0;
+  font-size: 12px;
+}
+
+.login__input {
+  display: block;
+  width: 100%;
+  padding: 5px 0;
+  outline: none;
+  appearance: none;
+  border-style: none;
+  text-align: left;
+  font-size: 16px;
+  font-weight: lighter;
+  color: #000;
+  background-color: transparent;
+}
+
+.login__location-btn {
+  display: inline-block;
+  width: 80%;
+  margin: 0 auto 15px auto;
+  text-align: center;
+  font-size: 16px;
+}
+
+.location-school {
+  vertical-align: top;
+}
+
+.login__option {
+  width: 80%;
+  margin: auto;
+  height: 25px;
+  line-height: 25px;
+}
+
+.login__remember-btn {
+  float: left;
+  font-size: 14px;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.login__forget-btn {
+  float: right;
+  font-size: 14px;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.login__btn {
+  width: 80%;
+  height: 40px;
+  display: block;
+  margin: 5px auto;
+  background-color: #3c89fd;
+  box-shadow: 0 5px 5px rgba(0, 0, 0, 0.08);
+}
+
+.wxlogin {
+  width: 80%;
+  margin: auto;
+  height: 25px;
+  line-height: 25px;
+  text-align: right;
+  font-size: 14px;
+  color: rgb(123, 179, 46);
+}
+
+.wxlogin__icon {
+  width: 15x;
+  height: 15px;
+  position: relative;
+  top: 2px;
+}
+
+.register__btn {
+  width: 80%;
+  height: 40px;
+  display: block;
+  margin: 20px auto;
+  background-color: rgb(255, 255, 255);
+  color: rgb(54, 116, 220);
+  box-shadow: 0 5px 5px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgb(54, 116, 220);
+}
+/* 底部选择器 */
+.picker-wrapper {
+  width: 100%;
+}
+
+.picker-slot {
+  font-size: 14px;
+}
+
+.picker-slot {
+  background-color: #ffffff;
+}
+
+/* 忘记密码区域 */
+.retrieve {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+}
+
+.retrieve__content {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100%;
+  background-color: #fff;
+  padding-top: 30px;
+  padding-bottom: 60px;
+}
+
+.retrieve__input::-webkit-input-placeholder {
+  color: #b2b2b2;
+  font-size: 12px;
+}
+
+.retrieve__input {
+  display: block;
+  box-sizing: content-box;
+  width: 70%;
+  padding: 8px;
+  margin: 20px auto;
+  outline: none;
+  appearance: none;
+  border: 1px solid #d5d5d5;
+  text-align: left;
+  font-size: 14px;
+  font-weight: lighter;
+  color: #000;
+  background-color: transparent;
+}
+
+.retrieve__logo {
+  margin: 0 auto 30px auto;
+  width: 100px;
+}
+
+.retrieve-btn {
+  display: block;
+  box-sizing: content-box;
+  margin: 0 auto;
+  width: 70%;
+  background-color: #21d0c3;
+  padding: 0 10px;
+}
+.retrieve-btn2 {
+  display: block;
+  box-sizing: content-box;
+  margin: 0 auto;
+  margin-bottom: 20px;
+  width: 70%;
+  background-color: #a7a7a7;
+  padding: 0 10px;
+}
+.retrieve__quit {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  top: 15px;
+  left: 5px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+}
+/**用户注册区域**/
+.register {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+}
+
+.register__content {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100%;
+  background-color: #fff;
+  padding-top: 30px;
+  padding-bottom: 30px;
+}
+.register__button {
+  display: block;
+  box-sizing: content-box;
+  width: 70%;
+  height: 20px;
+  padding: 8px;
+  margin: 20px auto;
+  outline: none;
+  appearance: none;
+  text-align: center;
+  font-size: 17px;
+  font-weight: lighter;
+  color: rgb(255, 255, 255);
+  background-color: rgb(192, 189, 189);
+}
+.register__input::-webkit-input-placeholder {
+  color: #b2b2b2;
+  font-size: 14px;
+}
+
+.phone {
+  display: block;
+  box-sizing: content-box;
+  width: 70%;
+  padding: 8px;
+  margin: 20px auto;
+  outline: none;
+  appearance: none;
+  border-bottom: 1px solid #d5d5d5;
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+  text-align: left;
+  font-size: 14px;
+  font-weight: lighter;
+  color: rgb(150, 150, 150);
+  background-color: transparent;
+}
+.register__input {
+  display: block;
+  box-sizing: content-box;
+  width: 70%;
+  padding: 8px;
+  margin: 20px auto;
+  outline: none;
+  appearance: none;
+  border: 1px solid #d5d5d5;
+  text-align: left;
+  font-size: 14px;
+  font-weight: lighter;
+  color: rgb(150, 150, 150);
+  background-color: transparent;
+}
+
+.register__logo {
+  margin: 0 auto 10px auto;
+  width: 100px;
+}
+
+.register-btn {
+  display: block;
+  box-sizing: content-box;
+  margin: 0 auto;
+  width: 70%;
+  background-color: #21d0c3;
+  padding: 0 10px;
+}
+
+.register__quit {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  top: 15px;
+  left: 5px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+}
+
+.register__location-btn {
+  display: inline-block;
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  font-size: 16px;
+  color: rgb(150, 150, 150);
+}
+
+.register__grade {
+  display: block;
+  box-sizing: content-box;
+  width: 70%;
+  padding: 8px;
+  margin: 20px auto;
+  outline: none;
+  appearance: none;
+  border: 1px solid #d5d5d5;
+  text-align: left;
+  font-size: 14px;
+  font-weight: lighter;
+  color: rgb(150, 150, 150);
+  background-color: transparent;
+}
+
+.quit-icon {
+  display: block;
+  width: 22px;
+  height: 22px;
+  background-image: url("../../../static/images/left-arrow.svg");
+}
+
+.quit-text {
+  font-size: 16px;
+  color: #21d0c3;
+}
+
+.icon {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.icon-light {
+  width: 20px;
+  height: 20px;
+  background: no-repeat center/cover
+    url("../../../static/images/login&regist/light.png");
+}
+
+.icon-unlight {
+  width: 20px;
+  height: 20px;
+  background: no-repeat center/cover
+    url("../../../static/images/login&regist/unlight.png");
+}
+
+/* 针对小分辨率手机的优化 */
+@media screen and (max-width: 320px) {
+  .wave {
+    padding-top: 0;
+  }
+
+  .wave__image {
+    height: 70px;
+  }
+
+  .content {
+    height: calc(100% - 70px);
+  }
+
+  .login__title {
+    font-size: 2rem;
+  }
+
+  .retrieve__content {
+    padding-top: 20px;
+  }
+  .retrieve__logo {
+    width: 80px;
+  }
+}
+</style>

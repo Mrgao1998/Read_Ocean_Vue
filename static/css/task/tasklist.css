@@ -1,0 +1,22 @@
+.task-list {
+  position: absolute;
+  top: 50px;
+  bottom: 55px;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 15px;
+  -webkit-overflow-scrolling: touch;
+  overflow-y: scroll;
+  z-index: 0;
+}
+
+.task-list--teacher {
+  position: absolute;
+  top: 0;
+  bottom: 55px;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 15px;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+}

@@ -1,0 +1,197 @@
+const path = require("path")
+const projectRoot = path.resolve(__dirname, "../")
+const webpack = require("webpack")
+const HtmlWebpackPlugin = require("html-webpack-plugin")
+const ExtractTextPlugin = require("extract-text-webpack-plugin")
+const glob = require("glob")
+const entries = getEntry("./src/views/**/*.js")
+const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin
+const os = require("os")
+const HappyPack = require("happypack")
+const happyThreadPool = HappyPack.ThreadPool({size: os.cpus().length})
+
+module.exports = {
+  // 多页面入口, 利用...操作符混合
+  entry: {
+    ...entries,
+    ...{
+      vendors: ["vue", "axios", "vue-router"]
+    }
+  },
+  output: {
+    path: path.resolve(__dirname, "./dist"),
+    publicPath: process.env.NODE_ENV === "production" ? "/ReadingOcean/wechat/" : "/",
+    filename: "scripts/[name].[chunkhash].js"
+  },
+  module: {
+    rules: [
+      {
+        // 匹配所有 .vue 和 .js 文件
+        test: /\.(vue|js)$/,
+        // 强制 loader 为预处理
+        enforce: "pre",
+        loader: "eslint-loader",
+        // 规定 ESLint 需要处理的文件
+        include: projectRoot,
+        // 规定 ESLint 不需要处理的文件
+        exclude: /node_modules/,
+        // 配置选项
+        options: {
+          // 使用 ESLint 内置的 formatter
+          formatter: require("eslint/lib/formatters/codeframe"),
+          // 当 ESLint 不满足规则为 Error 时，模块会编译失败，页面无法正常显示（这是个强制措施）
+          failOnError: true
+        }
+      },
+      {
+        test: /\.html$/,
+        loader: "html-loader"
+      },
+      {
+        test: /\.vue$/,
+        loader: "vue-loader",
+        options: {
+          postcss: [require("autoprefixer")],
+          loaders: {
+            css: ExtractTextPlugin.extract({
+              fallback: "vue-style-loader",
+              use: "css-loader"
+            })
+          }
+        }
+      },
+      {
+        test: /\.js$/,
+        loader: "happypack/loader?id=jsloader",
+        exclude: /node_modules/
+      },
+      {
+        test: /\.css$/,
+        // loader: "style-loader!css-loader"
+        use: ExtractTextPlugin.extract({
+          fallback: "style-loader",
+          use: "css-loader"
+        })
+      },
+      {
+        test: /\.(png|jpg|gif)$/,
+        loader: "url-loader",
+        options: {
+          limit: 10000,
+          name: "[path][name].[ext]?[hash]"
+        }
+      },
+      {
+        test: /\.(eot|ttf|woff|woff2|svg)(\?\S*)?$/,
+        loader: "file-loader",
+        options: {
+          name: "[path][name].[ext]?[hash]"
+        }
+      }
+    ]
+  },
+  resolve: {
+    alias: {
+      "vue$": "vue/dist/vue.esm.js",
+      "axios$": "axios"
+    }
+  },
+  devServer: {
+    // public:"https://ro.bnuz.edu.cn", //当采用反向代理的时候开启此配置能解决开发时的跨域问题
+    host: "0.0.0.0",
+    port: 8080,
+    disableHostCheck: true,
+    historyApiFallback: {
+      rewrites: [
+        {from: /\/ReadingOcean\/wechat$/, to: "/login.html"},
+        {from: /\/ReadingOcean\/wechat\/home$/, to: "/home.html"},
+        {from: /\/ReadingOcean\/wechat\/qa$/, to: "/qa.html"},
+        {from: /\/ReadingOcean\/wechat\/courses$/, to: "/courses.html"},
+        {from: /\/ReadingOcean\/wechat\/qaDetail$/, to: "/qaDetail.html"},
+        {from: /\/ReadingOcean\/wechat\/bookDetail$/, to: "/bookDetail.html"},
+        {from: /\/ReadingOcean\/wechat\/taskDetail$/, to: "/taskDetail.html"},
+        {from: /\/ReadingOcean\/wechat\/taskDist$/, to: "/taskDist.html"},
+        {from: /\/ReadingOcean\/wechat\/communityDetail$/, to: "/communityDetail.html"},
+        {from: /\/ReadingOcean\/wechat\/ranking$/, to: "/ranking.html"},
+        {from: /\/ReadingOcean\/wechat\/wechatPay$/, to: "/wechatPay.html"},
+        {from: /\/ReadingOcean\/wechat\/wechatLogin$/, to: "/wechatLogin.html"},
+        {from: /.*/, to: "/home.html"}
+      ]
+    },
+    openPage: "/ReadingOcean/wechat",
+    noInfo: true,
+    hot: true
+  },
+  performance: {
+    hints: false
+  },
+  devtool: "cheap-module-eval-source-map",
+  plugins: [
+    new ExtractTextPlugin({
+      filename: "static/css/[name].[contenthash].css"
+    }),
+    new webpack.HashedModuleIdsPlugin(),
+    new webpack.optimize.CommonsChunkPlugin({
+      name: "vendor",
+      // filename: "scripts/vendor.[hash].js"
+      minChunks: Infinity
+    }),
+    new webpack.optimize.CommonsChunkPlugin({
+      name: "runtime",
+      filename: "scripts/runtime.[hash].js?"
+    }),
+    new HappyPack({
+      id: "jsloader",
+      threadPool: happyThreadPool,
+      loaders: ["babel-loader?cacheDirectory"]
+    })
+  ],
+  externals: {
+    "AMap": "window.AMap"
+  }
+}
+if (process.env.NODE_ENV === "production") {
+  module.exports.devtool = "#source-map"
+  // http://vue-loader.vuejs.org/en/workflow/production.html
+  module.exports.plugins = (module.exports.plugins || []).concat([
+    new webpack.DefinePlugin({
+      "process.env": {
+        NODE_ENV: "'production'"
+      }
+    }),
+    new webpack.optimize.UglifyJsPlugin({
+      sourceMap: false,
+      compress: {
+        warnings: false
+      }
+    }),
+    new webpack.LoaderOptionsPlugin({
+      minimize: true
+    })
+  ])
+}
+
+function getEntry(globPath) {
+  let entries = {}
+  let chunk
+
+  glob.sync(globPath).forEach(function (entry) {
+    chunk = path.basename(entry, path.extname(entry))
+    // 正确输出 js 和 html 的路径
+    entries[chunk] = entry
+  })
+  return entries
+}
+
+let pages = getEntry("./src/views/**/*.html")
+for (let pathname in pages) {
+  // 配置生成的 html 文件，定义路径等
+  let conf = {
+    filename: pathname + ".html", // html 文件输出路径
+    template: pages[pathname], // 模板路径
+    inject: "body", // js 插入位置
+    chunks: ["runtime", "vendor", pathname]
+  }
+  // 需要生成几个 html 文件，就配置几个 HtmlWebpackPlugin 对象
+  module.exports.plugins.push(new HtmlWebpackPlugin(conf))
+}
