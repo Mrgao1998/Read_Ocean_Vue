@@ -23,16 +23,15 @@
               <div class="left">
                 <img src="../../../../static/images/main/trophy.svg" />
                 <p>
-                  个人相关的一些信息，段位 积分 答题正确率 答题总时长
-                  个人答题时间
+                  个人答题闯关报告
                 </p>
               </div>
             </van-col>
             <!-- 闯关统计 -->
-            <van-col span="6">
+            <van-col span="6" @click="goAnswerStatistical">
               <div class="left">
                 <img src="../../../../static/images/main/trophy.svg" />
-                <p>闯关统计</p>
+                <p>答题闯关统计</p>
               </div>
             </van-col>
           </van-row>
@@ -208,6 +207,12 @@ export default {
         `/ReadingOcean/wechat/userAnswer/gameRanking/${this.userId}`
       )
       console.log(this.userInfo)
+    },
+    // 前往闯关统计
+    goAnswerStatistical() {
+      this.$router.push(
+        "/ReadingOcean/wechat/userAnswer/answerStatistical"
+      )
     },
     // 获取年级判断题目
     getJudgeQs() {

@@ -16,7 +16,6 @@ require("echarts/lib/component/tooltip")
 require("echarts/lib/component/title")
 
 export default {
-  name: "sector",
   mixins: [errorHandler, getSector, user],
   data() {
     return {

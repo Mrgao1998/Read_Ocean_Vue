@@ -51,6 +51,7 @@ export default {
         }).then(res => {
           var myChart = echarts.init(document.getElementById(this.picTypeFromDad))
           var option = {
+            // 标题
             title: {
               text: this.picTitleFromDad,
               left: "center",
@@ -62,6 +63,7 @@ export default {
             tooltip: {},
             backgroundColor: "#45515a",
             legend: {
+              type: "plain",
               data: ["平均书籍数量"]
             },
             xAxis: {

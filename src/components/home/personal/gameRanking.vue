@@ -9,7 +9,7 @@
       <div class="bg-image" ref="bgImage">
         <div class="play-wrapper">
           <div class="play" ref="playBtn" @click="changeShow">
-            <van-icon name="play" class="icon-play" />
+            <!-- <van-icon name="play" class="icon-play" /> -->
             <span class="text">开始闯关</span>
           </div>
         </div>

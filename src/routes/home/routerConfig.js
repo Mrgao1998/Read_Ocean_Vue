@@ -68,6 +68,10 @@ export default {
         {
           path: "personalAnswerdetail/:id",
           component: () => import("../../components/home/personal/personalAnswerdetail.vue")
+        },
+        {
+          path: "answerStatistical",
+          component: () => import("../../components/home/personal/answerStatistical.vue")
         }
       ]
     },

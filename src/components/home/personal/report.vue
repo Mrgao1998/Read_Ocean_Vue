@@ -329,6 +329,8 @@ export default {
   font-style: italic;
   letter-spacing: 0.4em;
 }
+
+
 .descripeStyle {
   text-align: left;
   font-size: 16px;

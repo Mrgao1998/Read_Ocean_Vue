@@ -2,68 +2,44 @@
   <transition name="slide">
     <div class="detail-wrapper">
       <!-- 头部 -->
-      <mt-header title="个人答题闯关报告" class="detail-wrapper-header">
+      <mt-header title="答题闯关统计" class="detail-wrapper-header">
         <mt-button slot="left" icon="back" @click="$router.go(-1)"></mt-button>
       </mt-header>
       <!-- 主要内容 -->
       <div class="popup__content">
-        <p class="personName-wrapper">
-          可爱的<span class="personName">高燕生同学</span>
-        </p>
-        <p class="rightTotal-wrapper">
-          个人闯关积分为：<span class="rightTotal">89</span>
-        </p>
+
+        <!-- 答题年级段分布占比 --> 
+        <!-- 学生答题男女占比 -->
+
+
+        
+        <!-- 答题数目前三名的班级、年级、学校 -->
+        <!-- <p class="personName-wrapper">可爱的<span class="personName">高燕生同学</span></p>
         <p class="rightTotal-wrapper">
           累计答对题目总数为：<span class="rightTotal">330</span>
         </p>
         <p class="rightTotal-wrapper">
           每次答题平均时长为：<span class="rightTotal">121s</span>
-        </p>
+        </p> -->
         <!--答对题目类型占比分布-->
-        <correct-accuracy :picTerm="term"></correct-accuracy>
+        <!-- <correct-accuracy :picTerm="term"></correct-accuracy> -->
         <!--各类型题目正确率柱状图-->
-        <person-histogram
-          :picType="type1"
-          :picTitle="title1"
-          :picTerm="term"
-        ></person-histogram>
+        <!-- <person-histogram :picType="type1" :picTitle="title1" :picTerm="term"></person-histogram> -->
         <!--各类型题目答对数量柱状图-->
-        <person-histogram
-          :picType="type2"
-          :picTitle="title2"
-          :picTerm="term"
-        ></person-histogram>
+        <!-- <person-histogram :picType="type2" :picTitle="title2" :picTerm="term"></person-histogram> -->
         <!--答题时间段分布柱状图-->
-        <person-histogram
-          :picType="type3"
-          :picTitle="title3"
-          :picTerm="term"
-        ></person-histogram>
-        <p>各年级题目占比</p>
+        <!-- <person-histogram :picType="type3" :picTitle="title3" :picTerm="term"></person-histogram> -->
+        <!-- <p>各年级题目占比</p> -->
       </div>
     </div>
   </transition>
 </template>
 
 <script>
-import CorrectAccuracy from "./answermoduleEcharts/correctAccuracy.vue"
-import PersonHistogram from "./answermoduleEcharts/personHistogram.vue"
 export default {
-  name: "personalAnswerdetail",
-  components: {
-    CorrectAccuracy,
-    PersonHistogram
-  },
+  name: "AnswerStatistical",
   data() {
-    return {
-      term: 1,
-      type1: "1",
-      title1: "各类型题目正确率柱状图",
-      type2: "2",
-      title2: "各类型题目答对数量柱状图",
-      type3: "3",
-      title3: "答题时间段分布柱状图"
-    }
+    return {}
   }
 }
 </script>
