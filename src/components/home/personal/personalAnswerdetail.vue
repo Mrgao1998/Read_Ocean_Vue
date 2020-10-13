@@ -39,7 +39,12 @@
           :picTitle="title3"
           :picTerm="term"
         ></person-histogram>
-        <p>各年级题目占比</p>
+        <person-histogram
+          :picType="type8"
+          :picTitle="title8"
+          :picTerm="term"
+        ></person-histogram>
+        <!-- <p>各年级题目占比</p> -->
       </div>
     </div>
   </transition>
@@ -62,7 +67,9 @@ export default {
       type2: "2",
       title2: "各类型题目答对数量柱状图",
       type3: "3",
-      title3: "答题时间段分布柱状图"
+      title3: "答题时间段分布柱状图",
+      type8: "8",
+      title8: "各年级所答题目数"
     }
   }
 }

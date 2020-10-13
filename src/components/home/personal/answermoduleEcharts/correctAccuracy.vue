@@ -141,12 +141,12 @@ export default {
           option.series[0].data = [
             {
               name: "单选题",
-              value: 50,
+              value: 50.6,
               number: 500
             },
             {
               name: "多选题",
-              value: 20,
+              value: 19.3,
               number: 200
             },
             {

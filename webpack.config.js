@@ -97,9 +97,9 @@ module.exports = {
     }
   },
   devServer: {
-    // public: "https://ro.bnuz.edu.cn", //当采用反向代理的时候开启此配置能解决开发时的跨域问题
+    // public: "https://ro.bnuz.edu.cn", // 当采用反向代理的时候开启此配置能解决开发时的跨域问题
     host: "127.0.0.1",
-    port: 8080,
+    port: 8888,
     disableHostCheck: true,
     historyApiFallback: {
       rewrites: [

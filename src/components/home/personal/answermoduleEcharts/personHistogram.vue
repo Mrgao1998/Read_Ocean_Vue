@@ -43,7 +43,7 @@ export default {
       // console.log(this.picTypeFromDad)
       if (this.picTypeFromDad === "1") {
         this.getBookRanking({
-          // 书籍数量柱状图
+          // 各类型题目正确率柱状图
           userType: this.userType,
           schoolId: this.schoolId,
           gradeName: this.userInfo.grade,
@@ -115,10 +115,24 @@ export default {
                         ]
                         return colorList[params.dataIndex]
                       }
+                      // label: {
+                      //   show: true, // 开启显示
+                      //   position: "top", // 在上方显示
+                      //   textStyle: { // 数值样式
+                      //     color: "white",
+                      //     fontSize: 14
+                      //   }
+                      // }
                     }
                   }
                 }
-              ]
+              ],
+              grid: {
+                left: 35,
+                top: 35,
+                right: 35,
+                bottom: 35
+              }
             }
             // 更改数值
             // for (var i = 0; i <= 2; i++) {
@@ -199,13 +213,21 @@ export default {
                         ]
                         return colorList[params.dataIndex]
                       }
+                      // label: {
+                      //   show: true, // 开启显示
+                      //   position: "top", // 在上方显示
+                      //   textStyle: { // 数值样式
+                      //     color: "white",
+                      //     fontSize: 14
+                      //   }
+                      // }
                     }
                   }
                 }
               ],
               grid: {
                 left: 35,
-                top: 35,
+                top: 45,
                 right: 35,
                 bottom: 35
               }
@@ -255,7 +277,14 @@ export default {
               },
               backgroundColor: "#45515a",
               xAxis: {
-                data: ["00-04时", "04-08时", "08-12时", "12-16时", "16-20时", "20-24时"],
+                data: [
+                  "00-04时",
+                  "04-08时",
+                  "08-12时",
+                  "12-16时",
+                  "16-20时",
+                  "20-24时"
+                ],
                 axisLabel: {
                   show: true,
                   textStyle: {
@@ -312,9 +341,8 @@ export default {
             console.log(err)
           })
       } else if (this.picTypeFromDad === "4") {
-        // 答题正确率（%）
+        // 各年级闯关信息统计
         this.getAnswerAccuracy({
-          // 答题正确率（%）柱状图
           userType: this.userType,
           schoolId: this.schoolId,
           gradeName: this.userInfo.grade,
@@ -338,18 +366,33 @@ export default {
                   fontStyle: "italic" // 标题字体
                 }
               },
-              tooltip: {},
+              tooltip: {
+                trigger: "axis"
+              },
               backgroundColor: "#45515a",
               legend: {
-                data: ["平均书籍数量"]
+                data: ["答题总数", "答题积分", "答题平均时长(s)"],
+                // orient: "vertical",
+                top: 30,
+                left: "center",
+                textStyle: {
+                  color: "white"
+                }
               },
               xAxis: {
-                data: ["个人", "班级", "年级"],
+                data: [
+                  "一年级",
+                  "二年级",
+                  "三年级",
+                  "四年级",
+                  "五年级",
+                  "六年级"
+                ],
                 axisLabel: {
                   show: true,
                   textStyle: {
                     color: "#fff",
-                    fontSize: 14
+                    fontSize: 12
                   }
                 }
               },
@@ -358,29 +401,200 @@ export default {
                   show: true,
                   textStyle: {
                     color: "#fff",
-                    fontSize: 14
+                    fontSize: 12
                   }
                 }
               },
               series: [
                 {
-                  name: "答题正确率",
+                  name: "答题总数",
                   type: "bar",
-                  data: [0, 0, 0],
-                  itemStyle: {
-                    normal: {
-                      // 每个柱子的颜色即为colorList数组里的每一项，如果柱子数目多于colorList的长度，则柱子颜色循环使用该数组
-                      color: function (params) {
-                        var colorList = [
-                          "rgb(133,164,197)",
-                          "rgb(132,210,206)",
-                          "rgb(189,211,228)",
-                          "rgb(159,205,238)"
-                        ]
-                        return colorList[params.dataIndex]
-                      }
-                    }
+                  data: [50, 60, 70, 80, 90, 100],
+                  color: "green"
+                },
+                {
+                  name: "答题积分",
+                  type: "bar",
+                  data: [150, 200, 250, 300, 350, 400],
+                  color: "#87CEFA"
+                },
+                {
+                  name: "答题平均时长(s)",
+                  type: "bar",
+                  data: [120, 110, 100, 90, 80, 70],
+                  color: "pink"
+                }
+              ],
+              grid: {
+                left: 35,
+                top: 75,
+                right: 35,
+                bottom: 35
+              }
+            }
+            // for (var i = 0; i <= 2; i++) {
+            //   option.series[0].data[i] = res.data.result.data[i].num
+            // }
+            myChart.setOption(option)
+          })
+          .catch((err) => {
+            console.log(err)
+          })
+      } else if (this.picTypeFromDad === "5") {
+        // 各积分段中男女生比例
+        this.getAnswerAccuracy({
+          userType: this.userType,
+          schoolId: this.schoolId,
+          gradeName: this.userInfo.grade,
+          classId: this.userInfo.classId,
+          studentId: this.userId,
+          termId: this.picTermFromDad,
+          token: this.token
+        })
+          .then((res) => {
+            // console.log(res.data.result.data)
+            var myChart = echarts.init(
+              document.getElementById(this.picTypeFromDad)
+            )
+            var option = {
+              title: {
+                text: this.picTitleFromDad,
+                left: "center",
+                top: 0,
+                textStyle: {
+                  color: "#ccc",
+                  fontStyle: "italic" // 标题字体
+                }
+              },
+              tooltip: {
+                trigger: "item",
+                // 自定义悬浮框内容
+                formatter: function (params) {
+                  console.log(params)
+                  return `<span style="color:#00FFFF;text-align:center;">${params.seriesName}</span><br/>
+                        ${params.marker}${params.name}占比：<span style="color:yellow">${params.value}%</span> <br/>`
+                }
+              },
+              backgroundColor: "#45515a",
+              legend: {
+                data: ["男", "女"],
+                // orient: "vertical",
+                top: 30,
+                left: "center",
+                textStyle: {
+                  color: "white"
+                }
+              },
+              xAxis: {
+                data: ["0-250分", "250-500分", "500-750分", "750分以上"],
+                axisLabel: {
+                  show: true,
+                  textStyle: {
+                    color: "#fff",
+                    fontSize: 10
                   }
+                }
+              },
+              yAxis: {
+                axisLabel: {
+                  show: true,
+                  textStyle: {
+                    color: "#fff",
+                    fontSize: 12
+                  }
+                }
+              },
+              series: [
+                {
+                  name: "男",
+                  type: "bar",
+                  data: [56, 65, 70, 82],
+                  color: "#00BFFF"
+                },
+                {
+                  name: "女",
+                  type: "bar",
+                  data: [44, 35, 30, 19],
+                  color: "#FF69B4"
+                }
+              ],
+              grid: {
+                left: 35,
+                top: 75,
+                right: 35,
+                bottom: 35
+              }
+            }
+            // for (var i = 0; i <= 2; i++) {
+            //   option.series[0].data[i] = res.data.result.data[i].num
+            // }
+            myChart.setOption(option)
+          })
+          .catch((err) => {
+            console.log(err)
+          })
+      } else if (this.picTypeFromDad === "6") {
+        // 答题时间段分布柱状图（所有同学）
+        this.getAnswerAccuracy({
+          userType: this.userType,
+          schoolId: this.schoolId,
+          gradeName: this.userInfo.grade,
+          classId: this.userInfo.classId,
+          studentId: this.userId,
+          termId: this.picTermFromDad,
+          token: this.token
+        })
+          .then((res) => {
+            // console.log(res.data.result.data)
+            var myChart = echarts.init(
+              document.getElementById(this.picTypeFromDad)
+            )
+            var option = {
+              title: {
+                text: this.picTitleFromDad,
+                left: "center",
+                top: 0,
+                textStyle: {
+                  color: "#ccc",
+                  fontStyle: "italic" // 标题字体
+                }
+              },
+              tooltip: {
+                trigger: "axis"
+              },
+              backgroundColor: "#45515a",
+              xAxis: {
+                data: [
+                  "00-04时",
+                  "04-08时",
+                  "08-12时",
+                  "12-16时",
+                  "16-20时",
+                  "20-24时"
+                ],
+                axisLabel: {
+                  show: true,
+                  textStyle: {
+                    color: "#fff",
+                    fontSize: 10
+                  }
+                }
+              },
+              yAxis: {
+                axisLabel: {
+                  show: true,
+                  textStyle: {
+                    color: "#fff",
+                    fontSize: 12
+                  }
+                }
+              },
+              series: [
+                {
+                  name: "该时间段答题总数",
+                  type: "line",
+                  data: [56, 65, 70, 82, 99, 3],
+                  color: "#00BFFF"
                 }
               ],
               grid: {
@@ -390,9 +604,217 @@ export default {
                 bottom: 35
               }
             }
-            for (var i = 0; i <= 2; i++) {
-              option.series[0].data[i] = res.data.result.data[i].num
+            // for (var i = 0; i <= 2; i++) {
+            //   option.series[0].data[i] = res.data.result.data[i].num
+            // }
+            myChart.setOption(option)
+          })
+          .catch((err) => {
+            console.log(err)
+          })
+      } else if (this.picTypeFromDad === "7") {
+        // 答题时间段分布柱状图（所有同学）
+        this.getAnswerAccuracy({
+          userType: this.userType,
+          schoolId: this.schoolId,
+          gradeName: this.userInfo.grade,
+          classId: this.userInfo.classId,
+          studentId: this.userId,
+          termId: this.picTermFromDad,
+          token: this.token
+        })
+          .then((res) => {
+            // console.log(res.data.result.data)
+            var myChart = echarts.init(
+              document.getElementById(this.picTypeFromDad)
+            )
+            var yData = [
+              "河北",
+              "北京",
+              "天津",
+              "河南",
+              "山东"
+            ]
+            // 百分比数据
+            var ratio = [45, 12, 10, 7, 6]
+            // 100%-ratio 剩下的
+            var surplus = [55, 88, 90, 93, 94]
+            var option = {
+              // 学校答题积分top5
+              title: {
+                text: this.picTitleFromDad,
+                left: "center",
+                top: 0,
+                textStyle: {
+                  color: "#ccc",
+                  fontStyle: "italic" // 标题字体
+                }
+              },
+              grid: {
+                left: "8%",
+                right: "8%",
+                bottom: "4%",
+                top: 35,
+                containLabel: true
+              },
+              xAxis: {
+                show: false
+              },
+              yAxis: {
+                type: "category",
+                inverse: true,
+                // 城市名称
+                data: yData,
+                axisTick: {
+                  show: false
+                },
+                axisLine: {
+                  show: false
+                },
+                axisLabel: {
+                  show: true,
+                  color: function (value, index) {
+                    if (index === 0) {
+                      return "red"
+                    }
+                    if (index === 1) {
+                      return "#ff8447"
+                    }
+                    if (index === 2) {
+                      return "#ffcc00"
+                    }
+                    return "rgb(18,205,12)"
+                  },
+                  fontSize: 15,
+                  fontWeight: "bold"
+                }
+              },
+              series: [
+                {
+                  type: "bar",
+                  stack: "chart",
+                  z: 3,
+                  barWidth: "20",
+                  itemStyle: {
+                    normal: {
+                      color: new echarts.graphic.LinearGradient(1, 0, 0, 1, [
+                        {
+                          offset: 0,
+                          color: "#2A6BCD"
+                        },
+                        {
+                          offset: 1,
+                          color: "#34F6F8"
+                        }
+                      ])
+                    }
+                  },
+                  label: {
+                    normal: {
+                      position: "right",
+                      show: true,
+                      color: "white",
+                      formatter: "{c}%"
+                    }
+                  },
+                  data: ratio
+                },
+                {
+                  type: "bar",
+                  stack: "chart",
+                  barWidth: "20",
+                  itemStyle: {
+                    normal: {
+                      color: "#0D2253"
+                    }
+                  },
+                  data: surplus
+                }
+              ]
             }
+            // for (var i = 0; i <= 2; i++) {
+            //   option.series[0].data[i] = res.data.result.data[i].num
+            // }
+            myChart.setOption(option)
+          })
+          .catch((err) => {
+            console.log(err)
+          })
+      } else if (this.picTypeFromDad === "8") {
+        // 答题时间段分布柱状图（所有同学）
+        this.getAnswerAccuracy({
+          userType: this.userType,
+          schoolId: this.schoolId,
+          gradeName: this.userInfo.grade,
+          classId: this.userInfo.classId,
+          studentId: this.userId,
+          termId: this.picTermFromDad,
+          token: this.token
+        })
+          .then((res) => {
+            // console.log(res.data.result.data)
+            var myChart = echarts.init(
+              document.getElementById(this.picTypeFromDad)
+            )
+            var option = {
+              title: {
+                text: this.picTitleFromDad,
+                left: "center",
+                top: 0,
+                textStyle: {
+                  color: "#ccc",
+                  fontStyle: "italic" // 标题字体
+                }
+              },
+              tooltip: {
+                trigger: "axis"
+              },
+              backgroundColor: "#45515a",
+              xAxis: {
+                data: [
+                  "幼儿园",
+                  "一年级",
+                  "二年级",
+                  "三年级",
+                  "四年级",
+                  "五年级",
+                  "六年级"
+                ],
+                axisLabel: {
+                  show: true,
+                  textStyle: {
+                    color: "#fff",
+                    fontSize: 10
+                  }
+                }
+              },
+              yAxis: {
+                axisLabel: {
+                  show: true,
+                  textStyle: {
+                    color: "#fff",
+                    fontSize: 12
+                  }
+                }
+              },
+              series: [
+                {
+                  name: "该年级所答题数为：",
+                  type: "line",
+                  data: [56, 65, 70, 82, 99, 30, 70],
+                  color: "#00BFFF"
+                }
+              ],
+              grid: {
+                left: 35,
+                top: 35,
+                right: 35,
+                bottom: 35
+              }
+            }
+            // for (var i = 0; i <= 2; i++) {
+            //   option.series[0].data[i] = res.data.result.data[i].num
+            // }
             myChart.setOption(option)
           })
           .catch((err) => {

@@ -28,7 +28,7 @@
       >
         <div class="rank-list-wrapper">
           <!-- 标签页,选择班级排名或者学校排名 总排名 -->
-          <van-tabs @click="onClick">
+          <van-tabs @click="onClick" animated>
             <!-- 班级排名 -->
             <van-tab title="班级排名" name="0">
               <div class="rank-list">
@@ -67,6 +67,7 @@
                       >加载中...</van-loading
                     >
                   </li>
+                  <li v-show="classRankListNoMore" class="noMore">已无更多数据可加载</li>
                 </ul>
               </div>
             </van-tab>
@@ -108,6 +109,7 @@
                       >加载中...</van-loading
                     >
                   </li>
+                  <li v-show="gradeRankListNoMore" class="noMore">已无更多数据可加载</li>
                 </ul>
               </div>
             </van-tab>
@@ -149,11 +151,12 @@
                       >加载中...</van-loading
                     >
                   </li>
+                  <li v-show="schoolRankListNoMore" class="noMore">已无更多数据可加载</li>
                 </ul>
               </div>
             </van-tab>
-            <!-- 总排名 -->
-            <van-tab title="总排名" name="3">
+            <!-- 社区排名 -->
+            <van-tab title="社区排名" name="3">
               <div class="rank-list">
                 <ul class="rank-ul">
                   <van-row
@@ -190,6 +193,7 @@
                       >加载中...</van-loading
                     >
                   </li>
+                  <li v-show="communityRankListNoMore" class="noMore">已无更多数据可加载</li>
                 </ul>
               </div>
             </van-tab>
@@ -205,6 +209,8 @@
 </template>
 
 <script>
+import Axios from "axios"
+import * as API from "../../../api/api.js"
 import user from "../../../mixins/user.js"
 import Scroll from "./scroll.vue"
 import Vue from "vue"
@@ -228,7 +234,31 @@ export default {
       scrollY: 0,
       // 排行榜下拉刷新的loading显示与否
       isLoading: false,
-      // showActionSheet: false,
+      // 班级排名是否还能加载更多
+      classRankListNoMore: false,
+      // 年级排名是否还能加载更多
+      gradeRankListNoMore: false,
+      // 学校排名是否还能加载更多
+      schoolRankListNoMore: false,
+      // 社区排名是否还能加载更多
+      communityRankListNoMore: false,
+      // 发一次请求获取的排名的数量
+      pageSize: 20,
+      // 当前tab的下标
+      index: "0",
+      // 班级排名
+      classRankList: [],
+      // 班级排名页数
+      classpageNo: 1,
+      // 年级排名
+      gradeRankList: [],
+      gradepageNo: 1,
+      // 学校排名
+      schoolRankList: [],
+      schoolpageNo: 1,
+      // 总排名
+      communityRankList: [],
+      communitypageNo: 1,
       // 排名列表
       rankList: [
         "11111111111",
@@ -258,6 +288,8 @@ export default {
     this.listenScroll = true
     // 告知scroll组件派发下拉加载事件
     this.pullup = true
+    // 初始化排名
+    // this.getAllRank()
   },
   mounted() {
     this.imageHeight = this.$refs.bgImage.clientHeight
@@ -265,6 +297,97 @@ export default {
     this.$refs.list.$el.style.top = `${this.imageHeight}px`
   },
   methods: {
+    // 获取班级排名
+    getClassRank() {
+      return Axios({
+        url: API.getAllStudentRank,
+        method: "GET",
+        params: {
+          userId: this.userId,
+          schoolId: this.userInfo.schoolId,
+          classId: this.userInfo.classId,
+          pageNo: this.classpageNo++,
+          pageSize: this.pageSize
+        },
+        headers: {
+          Authorization: this.token
+        }
+      })
+    },
+    // 获取年级排名
+    getGradeRank() {
+      return Axios({
+        url: API.getAllStudentRank,
+        method: "GET",
+        params: {
+          userId: this.userId,
+          schoolId: this.userInfo.schoolId,
+          grade: this.userInfo.classId,
+          pageNo: this.gradepageNo++,
+          pageSize: this.pageSize
+        },
+        headers: {
+          Authorization: this.token
+        }
+      })
+    },
+    // 获取学校排名
+    getSchoolRank() {
+      return Axios({
+        url: API.getAllStudentRank,
+        method: "GET",
+        params: {
+          userId: this.userId,
+          schoolId: this.userInfo.schoolId,
+          pageNo: this.schoolpageNo++,
+          pageSize: this.pageSize
+        },
+        headers: {
+          Authorization: this.token
+        }
+      })
+    },
+    // 获取总排名
+    getCommunityRank() {
+      return Axios({
+        url: API.getAllStudentRank,
+        method: "GET",
+        params: {
+          userId: this.userId,
+          range: "community",
+          pageNo: this.communitypageNo++,
+          pageSize: this.pageSize
+        },
+        headers: {
+          Authorization: this.token
+        }
+      })
+    },
+    // 初始化排名
+    getAllRank() {
+      // 同时发起请求，获取所有排名，
+      Axios.all([
+        this.getClassRank(),
+        this.getGradeRank(),
+        this.getSchoolRank(),
+        this.getCommunityRank()
+      ]).then(
+        Axios.spread(
+          (getClassRank, getGradeRank, getSchoolRank, getCommunityRank) => {
+            // this.questionList = [
+            //   ...JuageRes.data.dataList,
+            //   ...SingleRes.data.dataList,
+            //   ...MultipleRes.data.dataList
+            // ]
+            // ------------到时候接口出来了编写---------------
+            // this.classRankList = [...getClassRank.data.list]
+            // this.gradeRankList = [...getGradeRank.data.list]
+            // this.schoolRankList = [...getSchoolRank.data.list]
+            // this.communityRankList = [...getCommunityRank.data.list]
+          }
+        )
+      )
+    },
     // 显示loading
     scroll(pos, maxScrollY) {
       this.scrollY = pos.y
@@ -274,7 +397,51 @@ export default {
     },
     // 滑动到排名的底部，加载更多数据
     scrollToEnd() {
-      // 发起求
+      if (this.index === "0") {
+        // 获取更多班级排名
+        if (!this.classRankListNoMore) {
+          // 判断是否还可以加载更多数据
+          this.getClassRank().then((res) => {
+            this.classRankList = [...this.classRankList, ...res.data.list]
+            if (res.data.length < this.pageSize) {
+              this.classRankListNoMore = true
+            }
+          })
+        }
+      } else if (this.index === "1") {
+        // 获取更多年级排名
+        if (!this.gradeRankListNoMore) {
+          this.getGradeRank().then((res) => {
+            this.gradeRankList = [...this.gradeRankList, ...res.data.list]
+            if (res.data.length < this.pageSize) {
+              this.gradeRankListNoMore = true
+            }
+          })
+        }
+      } else if (this.index === "2") {
+        // 获取更多学校排名
+        if (!this.schoolRankListNoMore) {
+          this.getSchoolRank().then((res) => {
+            this.schoolRankList = [...this.schoolRankList, ...res.data.list]
+            if (res.data.length < this.pageSize) {
+              this.schoolRankListNoMore = true
+            }
+          })
+        }
+      } else if (this.index === "3") {
+        // 获取更多社区排名
+        if (!this.communityRankListNoMore) {
+          this.getCommunityRank().then((res) => {
+            this.communityRankList = [
+              ...this.communityRankList,
+              ...res.data.list
+            ]
+            if (res.data.length < this.pageSize) {
+              this.communityRankListNoMore = true
+            }
+          })
+        }
+      }
       var list11 = [
         "11111111111",
         "222222222",
@@ -299,9 +466,25 @@ export default {
       this.isLoading = false
     },
     // 点击相关排名，到时候发送数据请求
-    onClick(name) {
-      console.log(name)
+    onClick(name, title) {
+      this.index = name
+      // 以下代码可能有问题
+      // switch (name) {
+      //   case "0":
+      //     this.rankList = this.classRankList
+      //     break
+      //   case "1":
+      //     this.rankList = this.gradeRankList
+      //     break
+      //   case "2":
+      //     this.rankList = this.schoolRankList
+      //     break
+      //   case "3":
+      //     this.rankList = this.communityRankList
+      //     break
+      // }
       console.log("点击了tabs")
+      console.log(this.userInfo.classId)
     },
     // 点击开始闯关，向外传递事件，改变showActionSheet的值，显示ActionSheet
     changeShow() {
@@ -439,9 +622,17 @@ $font-size-medium = 16px
             .ranking
               font-weight bold
         .loadMore
+          height 30px
+          line-height 30px
+          font-size 24px
           text-align center
-          background-color black
           color white
+        .noMore
+          height 30px
+          line-height 30px
+          font-size 14px
+          text-align center
+          color #969799
     .loading-container
       position: absolute
       width: 100%
