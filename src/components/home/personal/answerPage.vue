@@ -181,10 +181,18 @@
       show-cancel-button
       @close="close"
     >
-      <p>正确率：<span>{{accuracy}}</span></p>
-      <p>答错题目数目为：<span>{{wrongCount}}</span></p>
-      <p>添加的积分：<span>{{integral}}</span></p>
-      <p>答题所花时间为：<span>{{times}}s</span></p>
+      <p>
+        正确率：<span>{{ accuracy }}</span>
+      </p>
+      <p>
+        答错题目数目为：<span>{{ wrongCount }}</span>
+      </p>
+      <p>
+        添加的积分：<span>{{ integral }}</span>
+      </p>
+      <p>
+        答题所花时间为：<span>{{ times }}s</span>
+      </p>
     </van-dialog>
   </div>
 </template>
@@ -203,6 +211,7 @@ import {
   NavBar,
   Dialog
 } from "vant"
+import Axios from "axios"
 Vue.use(Swipe)
 Vue.use(SwipeItem)
 Vue.use(Radio)
@@ -216,26 +225,26 @@ Vue.use(Dialog)
 export default {
   name: "AnswerPage",
   mounted() {
-    console.log("1111111111")
     // 开始计时
     this.time = setInterval(this.timer, 1000)
     // 获取开始答题的时间戳
-    this.startTime = new Date().getTime()
-  },
-  watch: {
-    // str(newStr) {
-    //   console.log("str被watch到改变了！！")
-    //   console.log(newStr)
-    // }
-    questionList(newVal) {
-      console.log("str被watch到改变了！！")
-      console.log(newVal)
-    }
+    this.nowTime = new Date().getTime()
+    console.log(this.questionList)
   },
   data() {
     return {
       isTrue: true,
       isFalse: false,
+      // 添加的积分
+      integral: 0,
+      nowTime: 0, // 开始答题时间戳，用于分析答题时间段分布
+      rightSingleQuestionList: [], // 答对单选题id数组
+      rightMultipleChoiceQuetionList: [], // 答对多选题id数组
+      rightTrueOrFalseQuestionList: [], // 答对判断题id数组
+      totalSingleNum: 0, // 总单选题数目
+      totalMultipleNum: 0, // 总多选题数目
+      totalTOFNum: 0, // 总判断题数目
+      times: 0, // 统计共多少秒时间
       // 当前题目的索引
       answerIndex: 0,
       // 下一题文本
@@ -268,8 +277,6 @@ export default {
       ],
       // 学生答对题目id的数组
       correctIdList: [],
-      // 添加的积分
-      integral: 0,
       // 轮播图是否可以手动滑动
       touchable: false,
       h: 0, // 定义时，分，秒，毫秒并初始化为0；
@@ -278,8 +285,6 @@ export default {
       ms: 0,
       time: 0, // 定时器
       str: "00:00:00",
-      times: "", // 统计共多少秒时间
-      startTime: 0,
       // 错误题数
       wrongCount: 0,
       // 答题正确率
@@ -419,21 +424,37 @@ export default {
             message: "确定提交并查看答题结果吗？"
           })
             .then(() => {
+              console.log(this.questionList)
               // on confirm
               for (let i = 0; i < this.TrueAnswerList.length; i++) {
                 if (this.TrueAnswerList[i].length === 1) {
                   // 单选或者判断题
+                  if (this.questionList[i].answer === "0" || this.questionList[i].answer === "1") {
+                    console.log("this.totalTOFNum++了")
+                    this.totalTOFNum++
+                  } else {
+                    console.log("this.totalSingleNum++了")
+                    this.totalSingleNum++
+                  }
                   if (this.AnswerList[i] === this.TrueAnswerList[i]) {
                     console.log(`第${i + 1}单选或判断题题答案正确！`)
                     // 单选或判断答对加3分
                     this.integral += 3
                     // 把答对的题目id加入数组中
+                    if (this.questionList[i].answer === "0" || this.questionList[i].answer === "1") {
+                      this.rightTrueOrFalseQuestionList.push(this.questionList[i].id)
+                    } else {
+                      this.rightSingleQuestionList.push(this.questionList[i].id)
+                    }
                     this.correctIdList.push(this.questionList[i].id)
                   } else {
                     this.wrongCount++
                     console.log(`第${i + 1}题答案错误！！`)
                   }
                 } else {
+                  // 记录多选题的数目
+                  console.log("this.totalMultipleNum++了")
+                  this.totalMultipleNum++
                   // 处理多选题的答案
                   if (
                     this.TrueAnswerList[i].length === this.AnswerList[i].length
@@ -459,6 +480,7 @@ export default {
                       // 多选题答对加5分
                       this.integral += 5
                       // 把答对的题目id加入数组中
+                      this.rightMultipleChoiceQuetionList.push(this.questionList[i].id)
                       this.correctIdList.push(this.questionList[i].id)
                       console.log(`第${i + 1}多选题答案正确！！`)
                     }
@@ -468,7 +490,7 @@ export default {
                   }
                 }
               }
-              // ---------------------
+              // 正确率
               this.accuracy = `${(
                 ((this.questionList.length - this.wrongCount) /
                   this.questionList.length) *
@@ -495,6 +517,13 @@ export default {
               console.log(`错误的题目总数为：${this.wrongCount}`)
               console.log(`本次答题所花时间为为：${this.times}s`)
               console.log(`本次答题正确率为：${this.accuracy}%`)
+              console.log(`总判断题数目为：${this.totalTOFNum}`)
+              console.log(`总单选题数目为：${this.totalSingleNum}`)
+              console.log(`总多断题数目为：：${this.totalMultipleNum}`)
+              console.log(`单选题数组：${this.rightSingleQuestionList}`)
+              console.log(`多选题数组：${this.rightMultipleChoiceQuetionList}`)
+              console.log(`判断题数组：${this.rightTrueOrFalseQuestionList}`)
+              console.log(this.questionList)
               clearInterval(this.time)
               this.showDialog = true
             })
