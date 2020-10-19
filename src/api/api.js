@@ -113,40 +113,46 @@ const payReadingReportIndividual = baseUrl.concat("/ReadingOcean/wx/payReadingRe
 const judgeIsSanKe = baseUrl.concat("/ReadingOcean/user/judgeIsSanKe")
 
 // 高燕生毕设
-// 返回添加后的积分信息(提交增加积分)
-const addRankScoreByStudentId = baseUrl.concat("/ReadingOcean/mobileRank/addRankScoreByStudentId")
-// 获取某学生当天剩余答题次数
-const getAnswerCountByStudentId = baseUrl.concat("/ReadingOcean/mobileRank/getAnswerCountByStudentId")
+// 获取学生某年级判断题
+const queryTrueFalseQListBySuit = baseUrl.concat("/ReadingOcean/bookq/queryTrueFalseQListBySuit")
+// 获取学生某年级单选题
+const querySingleChoiceQListBySuit = baseUrl.concat("/ReadingOcean/bookq/querySingleChoiceQListBySuit")
+// 获取学生某年级多选题
+const queryMultipleChoiceQListBySuit = baseUrl.concat("/ReadingOcean/bookq/queryMultipleChoiceQListBySuit")
+
+// 添加分数同时记录答对的题目扣减答题次数
+const addScoreAndInsertAnswerRecord = baseUrl.concat("/ReadingOcean/mobileRank/addScoreAndInsertAnswerRecord")
+// 获取各学校rank总分, 倒序排序
+const getAllSchoolTotalRank = baseUrl.concat("/ReadingOcean/mobileRank/getAllSchoolTotalRank")
 // 获取所有学生rank积分接口
 const getAllStudentRank = baseUrl.concat("/ReadingOcean/mobileRank/getAllStudentRank")
-// 查询答题闯关详细信息
+// 获取某学生当天剩余答题次数
+const getAnswerCountByStudentId = baseUrl.concat("/ReadingOcean/mobileRank/getAnswerCountByStudentId")
+// 查询学生答题闯关详细信息
 const getDetailsRankInfo = baseUrl.concat("/ReadingOcean/mobileRank/getDetailsRankInfo")
+// 获取各分段男女人数
+const getGenderDistribution = baseUrl.concat("/ReadingOcean/mobileRank/getGenderDistribution")
+// 各年级闯关信息统计 (答题总数, 答题积分, 答题平均时长)
+const getRankInfoGroupByGrade = baseUrl.concat("/ReadingOcean/mobileRank/getRankInfoGroupByGrade")
 // 根据学生id获取rank积分信息
 const getStudentRankById = baseUrl.concat("/ReadingOcean/mobileRank/getStudentRankById")
-// 扣减答题次数
-const reduceAnswerCountByStudentId = baseUrl.concat("/ReadingOcean/mobileRank/reduceAnswerCountByStudentId")
-// 获取某年级判断题
-const queryTrueFalseQListBySuit = baseUrl.concat("/ReadingOcean/bookq/queryTrueFalseQListBySuit")
-// 获取某年级单选题
-const querySingleChoiceQListBySuit = baseUrl.concat("/ReadingOcean/bookq/querySingleChoiceQListBySuit")
-// 获取某年级多选题
-const queryMultipleChoiceQListBySuit = baseUrl.concat("/ReadingOcean/bookq/queryMultipleChoiceQListBySuit")
-// 获取某一学生rank分数,没有记录则初始化该学生答题记录
-const getStudentRankByStudentId = baseUrl.concat("/ReadingOcean/studentRank/getStudentRankByStudentId")
-
+// 获取所有学生的答题时间分布总和
+const getTotalAnswerHabit = baseUrl.concat("/ReadingOcean/mobileRank/getTotalAnswerHabit")
 export {
   // 毕设
   queryTrueFalseQListBySuit,
   querySingleChoiceQListBySuit,
   queryMultipleChoiceQListBySuit,
 
-  getStudentRankByStudentId,
-  addRankScoreByStudentId,
+  addScoreAndInsertAnswerRecord,
   getAnswerCountByStudentId,
   getAllStudentRank,
   getDetailsRankInfo,
   getStudentRankById,
-  reduceAnswerCountByStudentId,
+  getAllSchoolTotalRank,
+  getGenderDistribution,
+  getRankInfoGroupByGrade,
+  getTotalAnswerHabit,
 
   // 以下是项目的
   judgeIsSanKe,
