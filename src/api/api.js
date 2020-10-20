@@ -119,7 +119,8 @@ const queryTrueFalseQListBySuit = baseUrl.concat("/ReadingOcean/bookq/queryTrueF
 const querySingleChoiceQListBySuit = baseUrl.concat("/ReadingOcean/bookq/querySingleChoiceQListBySuit")
 // 获取学生某年级多选题
 const queryMultipleChoiceQListBySuit = baseUrl.concat("/ReadingOcean/bookq/queryMultipleChoiceQListBySuit")
-
+// 扣减
+const reduceAnswerCountByStudentId = baseUrl.concat("/ReadingOcean/mobileRank/reduceAnswerCountByStudentId")
 // 添加分数同时记录答对的题目扣减答题次数
 const addScoreAndInsertAnswerRecord = baseUrl.concat("/ReadingOcean/mobileRank/addScoreAndInsertAnswerRecord")
 // 获取各学校rank总分, 倒序排序
@@ -144,6 +145,7 @@ export {
   querySingleChoiceQListBySuit,
   queryMultipleChoiceQListBySuit,
 
+  reduceAnswerCountByStudentId,
   addScoreAndInsertAnswerRecord,
   getAnswerCountByStudentId,
   getAllStudentRank,
