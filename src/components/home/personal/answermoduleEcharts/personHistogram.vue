@@ -8,8 +8,11 @@
   </div>
 </template>
 <script>
+// import Axios from "axios"
+// import * as API from "../../../../api/api.js"
 import errorHandler from "../../../../mixins/errorHandler.js"
 import getHistogram from "../../../../mixins/getHistogram.js"
+import getPersonalHistogram from "../../../../mixins/getPersonalHistogram.js"
 import user from "../../../../mixins/user.js"
 // 引入基本模板
 let echarts = require("echarts")
@@ -21,7 +24,7 @@ require("echarts/lib/component/title")
 
 export default {
   name: "PersonHistogram",
-  mixins: [errorHandler, getHistogram, user],
+  mixins: [errorHandler, getHistogram, user, getPersonalHistogram],
   data() {
     return {
       picTypeFromDad: "",
@@ -613,14 +616,8 @@ export default {
             console.log(err)
           })
       } else if (this.picTypeFromDad === "7") {
-        // 答题时间段分布柱状图（所有同学）
-        this.getAnswerAccuracy({
-          userType: this.userType,
-          schoolId: this.schoolId,
-          gradeName: this.userInfo.grade,
-          classId: this.userInfo.classId,
-          studentId: this.userId,
-          termId: this.picTermFromDad,
+        // 答题积分top5学校
+        this.getTop5SchoolRank({
           token: this.token
         })
           .then((res) => {
@@ -628,19 +625,22 @@ export default {
             var myChart = echarts.init(
               document.getElementById(this.picTypeFromDad)
             )
-            var yData = [
-              "河北",
-              "北京",
-              "天津",
-              "河南",
-              "山东"
-            ]
-            // 百分比数据
-            var ratio = [45, 12, 10, 7, 6]
-            // 100%-ratio 剩下的
-            var surplus = [55, 88, 90, 93, 94]
+            // -----------------------------------------
+
+            var labelSetting = {
+              normal: {
+                show: true,
+                // offset: [-10, 0],
+                textStyle: {
+                  fontSize: 12,
+                  color: "white"
+                }
+              }
+            }
+            // 设置最大值
+            // var maxData = res.data.data[0].totalRank
             var option = {
-              // 学校答题积分top5
+              // 题目设置
               title: {
                 text: this.picTitleFromDad,
                 left: "center",
@@ -650,29 +650,53 @@ export default {
                   fontStyle: "italic" // 标题字体
                 }
               },
-              grid: {
-                left: "8%",
-                right: "8%",
-                bottom: "4%",
-                top: 35,
-                containLabel: true
+              // 数据项
+              dataset: {
+                source: [
+                  ["amount", "product"],
+                  [101852, "珠海香洲第一小学11111111111111111"],
+                  [91852, "大数据肯德基案大撒大撒1111111111111111"],
+                  [79146, "大数据肯德基案大撒312111111111111111大撒"],
+                  [41032, "大数据肯德基案大撒31大1111111111111111111撒"],
+                  [20145, "大数据肯德基案大撒12111大撒"]
+                ]
               },
+              // X轴配置
               xAxis: {
                 show: false
               },
+              // Y轴配置
               yAxis: {
                 type: "category",
                 inverse: true,
-                // 城市名称
-                data: yData,
-                axisTick: {
-                  show: false
-                },
-                axisLine: {
-                  show: false
-                },
+                axisTick: { show: false },
+                axisLine: { show: false },
                 axisLabel: {
                   show: true,
+                  interval: 0,
+                  rotate: 30,
+                  formatter: function (params) {
+                    var newParamsName = ""
+                    var paramsNameNumber = params.length
+                    var provideNumber = 6 // 一行显示几个字
+                    var rowNumber = Math.ceil(paramsNameNumber / provideNumber)
+                    if (paramsNameNumber > provideNumber) {
+                      for (var p = 0; p < rowNumber; p++) {
+                        var tempStr = ""
+                        var start = p * provideNumber
+                        var end = start + provideNumber
+                        if (p === rowNumber - 1) {
+                          tempStr = params.substring(start, paramsNameNumber)
+                        } else {
+                          tempStr = params.substring(start, end) + "\n"
+                        }
+                        newParamsName += tempStr
+                      }
+                    } else {
+                      newParamsName = params
+                    }
+                    return newParamsName
+                  },
                   color: function (value, index) {
                     if (index === 0) {
                       return "red"
@@ -685,16 +709,15 @@ export default {
                     }
                     return "rgb(18,205,12)"
                   },
-                  fontSize: 15,
-                  fontWeight: "bold"
+                  fontSize: 11
                 }
               },
               series: [
                 {
-                  type: "bar",
-                  stack: "chart",
-                  z: 3,
-                  barWidth: "20",
+                  type: "pictorialBar",
+                  barWidth: 25,
+                  label: labelSetting,
+                  symbol: "rect",
                   itemStyle: {
                     normal: {
                       color: new echarts.graphic.LinearGradient(1, 0, 0, 1, [
@@ -709,32 +732,24 @@ export default {
                       ])
                     }
                   },
-                  label: {
-                    normal: {
-                      position: "right",
-                      show: true,
-                      color: "white",
-                      formatter: "{c}%"
-                    }
+                  encode: {
+                    x: "amount",
+                    y: "product"
                   },
-                  data: ratio
-                },
-                {
-                  type: "bar",
-                  stack: "chart",
-                  barWidth: "20",
-                  itemStyle: {
-                    normal: {
-                      color: "#0D2253"
-                    }
-                  },
-                  data: surplus
+                  z: 20
                 }
-              ]
+              ],
+              grid: {
+                left: "20%",
+                top: "10%",
+                right: "0%",
+                bottom: "10%"
+              }
             }
-            // for (var i = 0; i <= 2; i++) {
-            //   option.series[0].data[i] = res.data.result.data[i].num
-            // }
+            for (let i = 1; i < 6; i++) {
+              option.dataset.source[i][0] = res.data.data[i - 1].totalRank
+              option.dataset.source[i][1] = res.data.data[i - 1].schoolName
+            }
             myChart.setOption(option)
           })
           .catch((err) => {

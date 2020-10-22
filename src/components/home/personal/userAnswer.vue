@@ -71,6 +71,7 @@
           v-if="showAnswerPage"
           :questionList="questionList"
           :TrueAnswerList="TrueAnswerList"
+          :questionGrade="grade"
           @closeAnswerPage="closeAnswerPage"
         ></answer-page>
       </transition>
@@ -99,20 +100,22 @@ export default {
   },
   data() {
     return {
+      // 获取题目数
+      pageSize: 5,
       // 剩余闯关次数
-      times: 0,
+      times: null,
       // 年级
-      grade: 3,
+      grade: null,
       // 是否显示答题页面
       showAnswerPage: false,
       // 是否显示闯关选取年级
       showActionSheet: false,
+      // 存储题目的数组
       questionList: [],
       // 标准答案数组
       TrueAnswerList: [],
       // 闯关的关卡选择数据
       actions: [
-        { name: "全部", subname: "到时候填写题目完成的比例" },
         { name: "幼儿园" },
         { name: "一年级" },
         { name: "二年级" },
@@ -139,13 +142,6 @@ export default {
     console.log("role             " + this.role)
     console.log("userType            " + this.userType)
     console.log("token               " + this.token)
-    this.getJudgeQs()
-      .then((res) => {
-        console.log(res.data)
-      })
-      .catch((err) => {
-        this.errorHandler(err)
-      })
   },
   methods: {
     // 点击按钮展示ActionSheet动作面板
@@ -163,57 +159,56 @@ export default {
       )
     },
     // 选择闯关的年级
-    onSelect(item) {
+    onSelect(item, name) {
       this.show = false
-      console.log(item)
-      // 判断选中的是哪个年级
-      switch (item) {
-        case "全部":
-          this.grade = null
-          break
-        case "幼儿园":
-          this.grade = 0
-          break
-        case "一年级":
-          this.grade = 1
-          break
-        case "二年级":
-          this.grade = 2
-          break
-        case "三年级":
-          this.grade = 3
-          break
-        case "四年级":
-          this.grade = 4
-          break
-        case "五年级":
-          this.grade = 5
-          break
-        case "六年级":
-          this.grade = 6
-          break
+      if (this.times) {
+        // 判断选中的是哪个年级
+        switch (item.name) {
+          case "幼儿园":
+            this.grade = 0
+            break
+          case "一年级":
+            this.grade = 1
+            break
+          case "二年级":
+            this.grade = 2
+            break
+          case "三年级":
+            this.grade = 3
+            break
+          case "四年级":
+            this.grade = 4
+            break
+          case "五年级":
+            this.grade = 5
+            break
+          case "六年级":
+            this.grade = 6
+            break
+        }
+        // 同时发起请求，获取判断、单选、多选题目，
+        Axios.all([
+          this.getJudgeQs(),
+          this.getSingleQs(),
+          this.getMultipleQs()
+        ]).then(
+          Axios.spread((JuageRes, SingleRes, MultipleRes) => {
+            this.questionList = [
+              ...JuageRes.data.dataList,
+              ...SingleRes.data.dataList,
+              ...MultipleRes.data.dataList
+            ]
+            // 根据题目数组，获取对应的题目正确答案数组
+            for (let i = 0; i < this.questionList.length; i++) {
+              this.TrueAnswerList[i] = this.questionList[i].answer
+            }
+            // 显示答题页面
+            this.showAnswerPage = true
+          })
+        )
+      } else {
+        Toast("您今日已无闯关机会")
       }
-      // 同时发起请求，获取判断、单选、多选题目，
-      Axios.all([
-        this.getJudgeQs(),
-        this.getSingleQs(),
-        this.getMultipleQs()
-      ]).then(
-        Axios.spread((JuageRes, SingleRes, MultipleRes) => {
-          this.questionList = [
-            ...JuageRes.data.dataList,
-            ...SingleRes.data.dataList,
-            ...MultipleRes.data.dataList
-          ]
-          // 根据题目数组，获取对应的题目正确答案数组
-          for (let i = 0; i < this.questionList.length; i++) {
-            this.TrueAnswerList[i] = this.questionList[i].answer
-          }
-          console.log(this.TrueAnswerList)
-          console.log(this.questionList)
-          this.showAnswerPage = true
-        })
-      )
     },
     // 取消选择闯关
     onCancel() {
@@ -236,6 +231,9 @@ export default {
         url: API.getAnswerCountByStudentId,
         method: "GET",
         params: {
+          suit: this.grade,
+          pageNo: 1,
+          pageSize: 20,
           studentId: this.userId
         },
         headers: {
@@ -256,7 +254,9 @@ export default {
         method: "GET",
         params: {
           suit: this.grade,
-          pageNo: 120
+          pageNo: 1,
+          pageSize: this.pageSize,
+          studentId: this.userId
         },
         headers: {
           Authorization: this.token
@@ -270,7 +270,9 @@ export default {
         method: "GET",
         params: {
           suit: this.grade,
-          pageNo: 1
+          pageNo: 1,
+          pageSize: this.pageSize,
+          studentId: this.userId
         },
         headers: {
           Authorization: this.token
@@ -284,45 +286,15 @@ export default {
         method: "GET",
         params: {
           suit: this.grade,
-          pageNo: 1
+          pageNo: 1,
+          pageSize: this.pageSize,
+          studentId: this.userId
         },
         headers: {
           Authorization: this.token
         }
       })
     }
-    // 分页获取所有学生闯关积分
-    // getAllStudentRank() {
-    //   Axios({
-    //     url: API.getAllStudentRank,
-    //     method: "GET",
-    //     params: {
-    //       pageNo: 1
-    //     },
-    //     headers: {
-    //       Authorization: this.token
-    //     }
-    //   })
-    //     .then((res) => {
-    //       console.log(res)
-    //     })
-    //     .catch((err) => {
-    //       console.log(err)
-    //     })
-    // },
-    // // 获取某一学生rank分数,没有记录则初始化该学生答题记录
-    // getStudentRankByStudentId() {
-    //   return Axios({
-    //     url: API.getStudentRankByStudentId,
-    //     method: "GET",
-    //     params: {
-    //       studentId: this.userId + ""
-    //     },
-    //     headers: {
-    //       Authorization: this.token
-    //     }
-    //   })
-    // }
   }
 }
 </script>

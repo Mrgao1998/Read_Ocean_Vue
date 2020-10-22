@@ -8,16 +8,16 @@
       <!-- 主要内容 -->
       <div class="popup__content">
         <p class="personName-wrapper">
-          可爱的<span class="personName">高燕生同学</span>
+          可爱的<span class="personName">{{RankInfo_studentName}}同学</span>
         </p>
         <p class="rightTotal-wrapper">
-          个人闯关积分为：<span class="rightTotal">89</span>
+          个人闯关积分为：<span class="rightTotal">{{RankInfo_rank}}</span>
         </p>
         <p class="rightTotal-wrapper">
-          累计答对题目总数为：<span class="rightTotal">330</span>
+          累计答对题目总数为：<span class="rightTotal">{{RankInfo_totalCount}}</span>
         </p>
         <p class="rightTotal-wrapper">
-          每次答题平均时长为：<span class="rightTotal">121s</span>
+          每次答题平均时长为：<span class="rightTotal">{{RankInfo_avgTime + 's'}}</span>
         </p>
         <!--答对题目类型占比分布-->
         <correct-accuracy :picTerm="term"></correct-accuracy>
@@ -51,6 +51,11 @@
 </template>
 
 <script>
+import Axios from "axios"
+import * as API from "../../../api/api.js"
+import user from "../../../mixins/user.js"
+import errorHandler from "../../../mixins/errorHandler.js"
+import getDetailsRankInfo from "../../../mixins/getDetailsRankInfo.js"
 import CorrectAccuracy from "./answermoduleEcharts/correctAccuracy.vue"
 import PersonHistogram from "./answermoduleEcharts/personHistogram.vue"
 export default {
@@ -59,6 +64,7 @@ export default {
     CorrectAccuracy,
     PersonHistogram
   },
+  mixins: [errorHandler, getDetailsRankInfo],
   data() {
     return {
       term: 1,

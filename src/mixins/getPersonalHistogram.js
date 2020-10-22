@@ -22,7 +22,16 @@ export default {
     },
     getTimeDistribution(config) { // 答题时间段分布图
       return Axios({
-        url: API.getIntegrateRanking.concat("/" + config.userType + "/" + config.schoolId + "/" + config.gradeName + "/" + config.classId + "/" + config.studentId + "/" + config.termId),
+        url: API.getAllSchoolTotalRank.concat("/" + config.userType + "/" + config.schoolId + "/" + config.gradeName + "/" + config.classId + "/" + config.studentId + "/" + config.termId),
+        method: "GET",
+        headers: {
+          "Authorization": config.token
+        }
+      })
+    },
+    getTop5SchoolRank(config) { // 获取答题积分top5学校
+      return Axios({
+        url: API.getAllSchoolTotalRank,
         method: "GET",
         headers: {
           "Authorization": config.token

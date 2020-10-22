@@ -199,6 +199,10 @@
 
 <script>
 import Vue from "vue"
+import Axios from "axios"
+import * as API from "../../../api/api.js"
+import user from "../../../mixins/user.js"
+import errorHandler from "../../../mixins/errorHandler.js"
 import {
   RadioGroup,
   Radio,
@@ -211,7 +215,6 @@ import {
   NavBar,
   Dialog
 } from "vant"
-import Axios from "axios"
 Vue.use(Swipe)
 Vue.use(SwipeItem)
 Vue.use(Radio)
@@ -224,23 +227,23 @@ Vue.use(NavBar)
 Vue.use(Dialog)
 export default {
   name: "AnswerPage",
+  mixins: [user, errorHandler],
   mounted() {
     // 开始计时
     this.time = setInterval(this.timer, 1000)
     // 获取开始答题的时间戳
-    this.nowTime = new Date().getTime()
-    console.log(this.questionList)
+    this.nowTime = new Date().getHours()
+    console.log(this.userId)
   },
   data() {
     return {
-      isTrue: true,
       isFalse: false,
       // 添加的积分
       integral: 0,
       nowTime: 0, // 开始答题时间戳，用于分析答题时间段分布
-      rightSingleQuestionList: [], // 答对单选题id数组
-      rightMultipleChoiceQuetionList: [], // 答对多选题id数组
-      rightTrueOrFalseQuestionList: [], // 答对判断题id数组
+      // rightSingleQuestionList: [], // 答对单选题id数组
+      // rightMultipleChoiceQuetionList: [], // 答对多选题id数组
+      // rightTrueOrFalseQuestionList: [], // 答对判断题id数组
       totalSingleNum: 0, // 总单选题数目
       totalMultipleNum: 0, // 总多选题数目
       totalTOFNum: 0, // 总判断题数目
@@ -299,9 +302,47 @@ export default {
     // 题目数组
     questionList: Array,
     // 题目正确答案数组
-    TrueAnswerList: Array
+    TrueAnswerList: Array,
+    // 所选答题的题目的年级
+    questionGrade: Number
   },
   methods: {
+    // 改变提交时题目的格式
+    changeQuestionList(questionList) {
+      let newList = []
+      questionList.map((val, index, arr) => {
+        newList[index] = {}
+        newList[index].questionId = val.id
+        newList[index].suit = this.questionGrade
+        if (val.answer.length === 1) {
+          if (val.answer === "0" || val.answer === "1") {
+            newList[index].quetionType = 3
+          } else {
+            newList[index].quetionType = 1
+          }
+        } else {
+          newList[index].quetionType = 2
+        }
+      })
+      return newList
+    },
+    // 改变时间戳格式
+    changeNowTime(nowTime) {
+      if (nowTime >= 0 && nowTime < 4) {
+        nowTime = 0
+      } else if (nowTime >= 4 && nowTime < 8) {
+        nowTime = 4
+      } else if (nowTime >= 8 && nowTime < 12) {
+        nowTime = 8
+      } else if (nowTime >= 12 && nowTime < 16) {
+        nowTime = 12
+      } else if (nowTime >= 16 && nowTime < 20) {
+        nowTime = 16
+      } else if (nowTime >= 20 && nowTime < 24) {
+        nowTime = 20
+      }
+      return nowTime
+    },
     // 向父组件传递关闭答题页面事件
     close() {
       // this.$emit("closeAnswerPage")
@@ -414,8 +455,6 @@ export default {
       }
       // 如果是最后一题，进行提交操作；如果是倒数第二题在进入最后一题前，改变“下一题”按钮为“提交”
       if (this.answerIndex === this.questionList.length - 1) {
-        console.log("点击了提交")
-        console.log(this.AnswerList)
         // 处理提交功能,假如有未完成的题目，提示作答；如果全部完成，则进行提交
         if (this.checkAnswerList(this.AnswerList) === false) {
           Toast.fail("你仍有未作答的题目")
@@ -424,15 +463,16 @@ export default {
             message: "确定提交并查看答题结果吗？"
           })
             .then(() => {
-              console.log(this.questionList)
               // on confirm
               for (let i = 0; i < this.TrueAnswerList.length; i++) {
                 if (this.TrueAnswerList[i].length === 1) {
                   // 单选或者判断题
                   if (this.questionList[i].answer === "0" || this.questionList[i].answer === "1") {
+                    // 判断题
                     console.log("this.totalTOFNum++了")
                     this.totalTOFNum++
                   } else {
+                    // 单选题
                     console.log("this.totalSingleNum++了")
                     this.totalSingleNum++
                   }
@@ -442,11 +482,18 @@ export default {
                     this.integral += 3
                     // 把答对的题目id加入数组中
                     if (this.questionList[i].answer === "0" || this.questionList[i].answer === "1") {
-                      this.rightTrueOrFalseQuestionList.push(this.questionList[i].id)
+                      this.correctIdList.push({
+                        questionId: this.questionList[i].id,
+                        suit: this.questionGrade,
+                        quetionType: 3
+                      })
                     } else {
-                      this.rightSingleQuestionList.push(this.questionList[i].id)
+                      this.correctIdList.push({
+                        questionId: this.questionList[i].id,
+                        suit: this.questionGrade,
+                        quetionType: 1
+                      })
                     }
-                    this.correctIdList.push(this.questionList[i].id)
                   } else {
                     this.wrongCount++
                     console.log(`第${i + 1}题答案错误！！`)
@@ -480,8 +527,12 @@ export default {
                       // 多选题答对加5分
                       this.integral += 5
                       // 把答对的题目id加入数组中
-                      this.rightMultipleChoiceQuetionList.push(this.questionList[i].id)
-                      this.correctIdList.push(this.questionList[i].id)
+                      // this.rightMultipleChoiceQuetionList.push(this.questionList[i].id)
+                      this.correctIdList.push({
+                        questionId: this.questionList[i].id,
+                        suit: this.questionGrade,
+                        quetionType: 2
+                      })
                       console.log(`第${i + 1}多选题答案正确！！`)
                     }
                   } else {
@@ -513,27 +564,49 @@ export default {
                 this.dialogTitle = "仍需要加油哦"
               }
               console.log(`添加的积分为：${this.integral}`)
-              console.log(`答对的题目id数组为:${this.correctIdList}`)
+              console.log(this.correctIdList)
               console.log(`错误的题目总数为：${this.wrongCount}`)
               console.log(`本次答题所花时间为为：${this.times}s`)
               console.log(`本次答题正确率为：${this.accuracy}%`)
               console.log(`总判断题数目为：${this.totalTOFNum}`)
               console.log(`总单选题数目为：${this.totalSingleNum}`)
               console.log(`总多断题数目为：：${this.totalMultipleNum}`)
-              console.log(`单选题数组：${this.rightSingleQuestionList}`)
-              console.log(`多选题数组：${this.rightMultipleChoiceQuetionList}`)
-              console.log(`判断题数组：${this.rightTrueOrFalseQuestionList}`)
+              // console.log(`单选题数组：${this.rightSingleQuestionList}`)
+              // console.log(`多选题数组：${this.rightMultipleChoiceQuetionList}`)
+              // console.log(`判断题数组：${this.rightTrueOrFalseQuestionList}`)
               console.log(this.questionList)
               clearInterval(this.time)
               this.showDialog = true
+              // 答题的时间戳
+              this.nowTime = this.changeNowTime(this.nowTime)
+              Axios({
+                url: API.addScoreAndInsertAnswerRecord,
+                method: "POST",
+                data: {
+                  studentId: this.userId,
+                  nowTime: this.nowTime,
+                  rightQuestion: this.correctIdList,
+                  score: this.integral,
+                  totalSingleNum: this.totalSingleNum,
+                  totalMultipleNum: this.totalMultipleNum,
+                  totalTOFNum: this.totalTOFNum,
+                  timeConsuming: this.times,
+                  totalQuestionList: this.changeQuestionList(this.questionList)
+                },
+                headers: {
+                  Authorization: this.token
+                }
+              }).then(res => {
+                console.log(res)
+              }).catch(err => {
+                console.log(errorHandler(err))
+              })
             })
             .catch(() => {
               Toast("请继续作答")
             })
         }
       } else if (this.answerIndex === this.questionList.length - 2) {
-        // -----------------------------------------------------
-        console.log(this.AnswerList)
         // 当前题目下标更改
         this.answerIndex++
         // 轮播图显示下一张
@@ -564,8 +637,6 @@ export default {
           }
         }
       } else {
-        // -----------------------------------------------------
-        console.log(this.AnswerList)
         this.$refs.vanSwipe.next()
         this.answerIndex++
         // 进入下一题时，如果此题之前有记录，则显示之前的选项；如果没有记录，那就把选项置空
