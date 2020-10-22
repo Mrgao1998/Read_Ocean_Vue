@@ -329,17 +329,17 @@ export default {
     // 改变时间戳格式
     changeNowTime(nowTime) {
       if (nowTime >= 0 && nowTime < 4) {
-        nowTime = 0
+        nowTime = "zero"
       } else if (nowTime >= 4 && nowTime < 8) {
-        nowTime = 4
+        nowTime = "four"
       } else if (nowTime >= 8 && nowTime < 12) {
-        nowTime = 8
+        nowTime = "eight"
       } else if (nowTime >= 12 && nowTime < 16) {
-        nowTime = 12
+        nowTime = "twelve"
       } else if (nowTime >= 16 && nowTime < 20) {
-        nowTime = 16
+        nowTime = "sixteen"
       } else if (nowTime >= 20 && nowTime < 24) {
-        nowTime = 20
+        nowTime = "twenty"
       }
       return nowTime
     },
@@ -485,13 +485,13 @@ export default {
                       this.correctIdList.push({
                         questionId: this.questionList[i].id,
                         suit: this.questionGrade,
-                        quetionType: 3
+                        questionType: 3
                       })
                     } else {
                       this.correctIdList.push({
                         questionId: this.questionList[i].id,
                         suit: this.questionGrade,
-                        quetionType: 1
+                        questionType: 1
                       })
                     }
                   } else {
@@ -531,7 +531,7 @@ export default {
                       this.correctIdList.push({
                         questionId: this.questionList[i].id,
                         suit: this.questionGrade,
-                        quetionType: 2
+                        questionType: 2
                       })
                       console.log(`第${i + 1}多选题答案正确！！`)
                     }
@@ -571,14 +571,13 @@ export default {
               console.log(`总判断题数目为：${this.totalTOFNum}`)
               console.log(`总单选题数目为：${this.totalSingleNum}`)
               console.log(`总多断题数目为：：${this.totalMultipleNum}`)
-              // console.log(`单选题数组：${this.rightSingleQuestionList}`)
-              // console.log(`多选题数组：${this.rightMultipleChoiceQuetionList}`)
-              // console.log(`判断题数组：${this.rightTrueOrFalseQuestionList}`)
               console.log(this.questionList)
               clearInterval(this.time)
               this.showDialog = true
               // 答题的时间戳
+              console.log(this.correctIdList)
               this.nowTime = this.changeNowTime(this.nowTime)
+              console.log(this.nowTime)
               Axios({
                 url: API.addScoreAndInsertAnswerRecord,
                 method: "POST",
@@ -597,7 +596,7 @@ export default {
                   Authorization: this.token
                 }
               }).then(res => {
-                console.log(res)
+                this.$emit("reduceAnswerCountByStudentId")
               }).catch(err => {
                 console.log(errorHandler(err))
               })
