@@ -352,8 +352,6 @@ export default {
     this.listenScroll = true
     // 告知scroll组件派发下拉加载事件
     this.pullup = true
-    // 获取当前学生排名数据
-    this.getDetailsRankInfo(this.userId, this.token)
     // 初始化排名
     this.getAllRank()
   },
@@ -484,9 +482,6 @@ export default {
     // 显示loading
     scroll(pos, maxScrollY) {
       this.scrollY = pos.y
-      // if (this.scrollY - 64 <= maxScrollY) {
-      //   this.isLoading = true
-      // }
       if (this.scrollY - 64 <= maxScrollY) {
         if (
           (this.index === "0" && this.classRankListNoMore === true) ||
