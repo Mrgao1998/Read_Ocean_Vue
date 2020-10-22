@@ -5,8 +5,7 @@
   </div>
 </template>
 <script>
-import getSector from "../../../../mixins/getSector.js"
-import getDetailsRankInfo from "../../../../mixins/getDetailsRankInfo.js"
+import booksDetailVue from "../../../../views/book/booksDetail.vue"
 // 引入基本模板
 let echarts = require("echarts")
 // 引入提示框和title组件
@@ -14,23 +13,22 @@ require("echarts/lib/component/tooltip")
 require("echarts/lib/component/title")
 
 export default {
-  mixins: [getSector, getDetailsRankInfo],
-  data() {
-    return {
-    }
+  props: {
+    ResData: Object
   },
   mounted() {
+    console.log(this.ResData)
     this.init()
   },
   methods: {
     init() {
       // 基于准备好的dom，初始化echarts实例
       let myChart = echarts.init(document.getElementById("mySector"))
-      myChart.setOption({
+      var option = {
         title: {
           text: "答对题目类型占比分布",
           left: "center",
-          top: 0,
+          top: "5%",
           textStyle: {
             color: "#ccc",
             fontStyle: "italic" // 标题字体
@@ -49,20 +47,19 @@ export default {
         },
         series: [
           {
-            name: "访问来源",
             type: "pie", // 设置图表类型为饼图
             center: ["50%", "50%"],
-            radius: "55%", // 饼图的半径，外半径为可视区尺寸（容器高宽中较小一项）的 55% 长度。
+            radius: [60, 90], // 饼图的半径，外半径为可视区尺寸（容器高宽中较小一项）的 55% 长度。
             data: [ // 数据数组，name 为数据项名称，value 为数据项值
-              {value: 235, name: "单选题", number: ((235 / (235 + 274 + 310)) * 100).toFixed(4)},
-              {value: 274, name: "判断题", number: ((274 / (235 + 274 + 310)) * 100).toFixed(4)},
-              {value: 310, name: "多选题", number: ((310 / (235 + 274 + 310)) * 100).toFixed(4)}
+              {value: this.ResData.rightSingleNum, name: "单选题", number: ((this.ResData.rightSingleNum / this.ResData.rightCount) * 100).toFixed(4)},
+              {value: this.ResData.rightTofNum, name: "判断题", number: ((this.ResData.rightTofNum / this.ResData.rightCount) * 100).toFixed(4)},
+              {value: this.ResData.rightMultipleNum, name: "多选题", number: ((this.ResData.rightMultipleNum / this.ResData.rightCount) * 100).toFixed(4)}
             ],
             itemStyle: {
               // 图例样式
               normal: {
-                shadowBlur: 10, // 阴影模糊程度
-                shadowColor: "rgba(0, 0, 0, 0.1)", // 阴影颜色，一般黑
+                shadowBlur: 5, // 阴影模糊程度
+                shadowColor: "rgba(255, 255, 255, 0.5)", // 阴影颜色
                 color: function (params) {
                   var colorList = [
                     "rgb(222,247,114)",
@@ -81,7 +78,8 @@ export default {
             }
           }
         ]
-      })
+      }
+      myChart.setOption(option)
     }
   }
 }
