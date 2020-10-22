@@ -51,7 +51,11 @@ export default {
       // 单选题所答总数
       RankInfo_totalSingleNum: null,
       // 判断题所答总数
-      RankInfo_totalTorNum: null
+      RankInfo_totalTorNum: null,
+      // 请求的返回结果
+      ResData: null,
+      // 用于判断是否显示loading
+      isShow: false
     }
   },
   methods: {
@@ -67,6 +71,8 @@ export default {
         }
       }).then(res => {
         const data = res.data.data
+        this.ResData = data
+        console.log(this.ResData)
         this.RankInfo_accuracy = data.accuracy
         this.RankInfo_answerHabit = data.answerHabit
         this.RankInfo_avgTime = data.avgTime
@@ -88,6 +94,7 @@ export default {
         this.RankInfo_totalRank = data.totalRank
         this.RankInfo_totalSingleNum = data.totalSingleNum
         this.RankInfo_totalTorNum = data.totalTorNum
+        this.isShow = true
       }).catch(err => {
         console.log(errorHandler(err))
       })
