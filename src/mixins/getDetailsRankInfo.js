@@ -72,7 +72,6 @@ export default {
       }).then(res => {
         const data = res.data.data
         this.ResData = data
-        console.log(this.ResData)
         this.RankInfo_accuracy = data.accuracy
         this.RankInfo_answerHabit = data.answerHabit
         this.RankInfo_avgTime = data.avgTime
