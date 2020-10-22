@@ -73,6 +73,7 @@
           :TrueAnswerList="TrueAnswerList"
           :questionGrade="grade"
           @closeAnswerPage="closeAnswerPage"
+          @reduceAnswerCountByStudentId="reduceAnswerCountByStudentId"
         ></answer-page>
       </transition>
     </div>
@@ -130,11 +131,6 @@ export default {
     this.getAnswerCount()
   },
   mounted() {
-    Toast({
-      message: "欢迎来到答题闯关",
-      position: "bottom",
-      duration: 1500
-    })
     console.log("userId             " + this.userId)
     console.log("schoolId           " + this.schoolId)
     console.log("userInfo          " + this.userInfo)
@@ -144,6 +140,10 @@ export default {
     console.log("token               " + this.token)
   },
   methods: {
+    // 扣减答题次数
+    reduceAnswerCountByStudentId() {
+      this.getAnswerCount()
+    },
     // 点击按钮展示ActionSheet动作面板
     showAction() {
       this.showActionSheet = true
