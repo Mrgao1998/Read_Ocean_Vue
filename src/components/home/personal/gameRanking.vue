@@ -9,7 +9,6 @@
       <div class="bg-image" ref="bgImage">
         <div class="play-wrapper">
           <div class="play" ref="playBtn" @click="changeShow">
-            <!-- <van-icon name="play" class="icon-play" /> -->
             <span class="text">开始闯关</span>
           </div>
         </div>
@@ -43,9 +42,28 @@
                     <van-col span="11">班级</van-col>
                     <van-col span="5">闯关积分</van-col>
                   </van-row>
+                  <!-- 当前学生班级排名 -->
+                  <li class="item">
+                    <van-row
+                      type="flex"
+                      justify="space-between"
+                      class="item-detail"
+                    >
+                      <rank-number :num="RankInfo_classRank"></rank-number>
+                      <van-col span="6" class="info">{{
+                        RankInfo_studentName
+                      }}</van-col>
+                      <van-col span="12" class="info">{{
+                        RankInfo_classesName
+                      }}</van-col>
+                      <van-col span="4" class="info">{{
+                        RankInfo_rank
+                      }}</van-col>
+                    </van-row>
+                  </li>
                   <li
                     class="item"
-                    v-for="(item, index) in rankList"
+                    v-for="(item, index) in classRankList"
                     :key="index"
                   >
                     <van-row
@@ -53,12 +71,10 @@
                       justify="space-between"
                       class="item-detail"
                     >
-                      <van-col span="4" class="ranking">{{
-                        index + 1
-                      }}</van-col>
-                      <van-col span="6">高燕生</van-col>
-                      <van-col span="12">{{ userInfo.className }}</van-col>
-                      <van-col span="4">16</van-col>
+                      <rank-number :num="item.number"></rank-number>
+                      <van-col span="6">{{ item.name }}</van-col>
+                      <van-col span="12">{{ item.classesName }}</van-col>
+                      <van-col span="4">{{ item.rank }}</van-col>
                     </van-row>
                   </li>
                   <!-- loading底部加载 -->
@@ -67,7 +83,9 @@
                       >加载中...</van-loading
                     >
                   </li>
-                  <li v-show="classRankListNoMore" class="noMore">已无更多数据可加载</li>
+                  <li v-show="classRankListNoMore" class="noMore">
+                    已无更多数据可加载
+                  </li>
                 </ul>
               </div>
             </van-tab>
@@ -85,9 +103,28 @@
                     <van-col span="11">班级</van-col>
                     <van-col span="5">闯关积分</van-col>
                   </van-row>
+                  <!-- 当前学生年级排名 -->
+                  <li class="item">
+                    <van-row
+                      type="flex"
+                      justify="space-between"
+                      class="item-detail"
+                    >
+                      <rank-number :num="RankInfo_gradeRank"></rank-number>
+                      <van-col span="6" class="info">{{
+                        RankInfo_studentName
+                      }}</van-col>
+                      <van-col span="12" class="info">{{
+                        RankInfo_classesName
+                      }}</van-col>
+                      <van-col span="4" class="info">{{
+                        RankInfo_rank
+                      }}</van-col>
+                    </van-row>
+                  </li>
                   <li
                     class="item"
-                    v-for="(item, index) in rankList"
+                    v-for="(item, index) in gradeRankList"
                     :key="index"
                   >
                     <van-row
@@ -95,12 +132,10 @@
                       justify="space-between"
                       class="item-detail"
                     >
-                      <van-col span="4" class="ranking">{{
-                        index + 1
-                      }}</van-col>
-                      <van-col span="6">高燕生</van-col>
-                      <van-col span="12">{{ userInfo.className }}</van-col>
-                      <van-col span="4">166</van-col>
+                      <rank-number :num="item.number"></rank-number>
+                      <van-col span="6">{{ item.name }}</van-col>
+                      <van-col span="12">{{ item.classesName }}</van-col>
+                      <van-col span="4">{{ item.rank }}</van-col>
                     </van-row>
                   </li>
                   <!-- loading底部加载 -->
@@ -109,7 +144,9 @@
                       >加载中...</van-loading
                     >
                   </li>
-                  <li v-show="gradeRankListNoMore" class="noMore">已无更多数据可加载</li>
+                  <li v-show="gradeRankListNoMore" class="noMore">
+                    已无更多数据可加载
+                  </li>
                 </ul>
               </div>
             </van-tab>
@@ -124,12 +161,31 @@
                   >
                     <van-col span="4">排名</van-col>
                     <van-col span="6">姓名</van-col>
-                    <van-col span="11">年级</van-col>
+                    <van-col span="11">年级班级</van-col>
                     <van-col span="5">闯关积分</van-col>
                   </van-row>
+                  <!-- 当前学生学校排名 -->
+                  <li class="item">
+                    <van-row
+                      type="flex"
+                      justify="space-between"
+                      class="item-detail"
+                    >
+                      <rank-number :num="RankInfo_schoolRank"></rank-number>
+                      <van-col span="6" class="info">{{
+                        RankInfo_studentName
+                      }}</van-col>
+                      <van-col span="12" class="info">{{
+                        RankInfo_gradeName + RankInfo_classesName
+                      }}</van-col>
+                      <van-col span="4" class="info">{{
+                        RankInfo_rank
+                      }}</van-col>
+                    </van-row>
+                  </li>
                   <li
                     class="item"
-                    v-for="(item, index) in rankList"
+                    v-for="(item, index) in schoolRankList"
                     :key="index"
                   >
                     <van-row
@@ -137,12 +193,12 @@
                       justify="space-between"
                       class="item-detail"
                     >
-                      <van-col span="4" class="ranking">{{
-                        index + 1
+                      <rank-number :num="item.number"></rank-number>
+                      <van-col span="6">{{ item.name }}</van-col>
+                      <van-col span="12">{{
+                        item.gradeName + item.classesName
                       }}</van-col>
-                      <van-col span="6">高燕生</van-col>
-                      <van-col span="12">{{ userInfo.grade }}</van-col>
-                      <van-col span="4">1666</van-col>
+                      <van-col span="4">{{ item.rank }}</van-col>
                     </van-row>
                   </li>
                   <!-- loading底部加载 -->
@@ -151,7 +207,9 @@
                       >加载中...</van-loading
                     >
                   </li>
-                  <li v-show="schoolRankListNoMore" class="noMore">已无更多数据可加载</li>
+                  <li v-show="schoolRankListNoMore" class="noMore">
+                    已无更多数据可加载
+                  </li>
                 </ul>
               </div>
             </van-tab>
@@ -169,9 +227,28 @@
                     <van-col span="11">学校</van-col>
                     <van-col span="5">闯关积分</van-col>
                   </van-row>
+                  <!-- 当前学生社区排名 -->
+                  <li class="item">
+                    <van-row
+                      type="flex"
+                      justify="space-between"
+                      class="item-detail"
+                    >
+                      <rank-number :num="RankInfo_totalRank"></rank-number>
+                      <van-col span="6" class="info">{{
+                        RankInfo_studentName
+                      }}</van-col>
+                      <van-col span="12" class="info">{{
+                        RankInfo_schoolName
+                      }}</van-col>
+                      <van-col span="4" class="info">{{
+                        RankInfo_rank
+                      }}</van-col>
+                    </van-row>
+                  </li>
                   <li
                     class="item"
-                    v-for="(item, index) in rankList"
+                    v-for="(item, index) in communityRankList"
                     :key="index"
                   >
                     <van-row
@@ -179,12 +256,10 @@
                       justify="space-between"
                       class="item-detail"
                     >
-                      <van-col span="4" class="ranking">{{
-                        index + 1
-                      }}</van-col>
-                      <van-col span="6">高燕生</van-col>
-                      <van-col span="12">{{ userInfo.schoolName }}</van-col>
-                      <van-col span="4">16666</van-col>
+                      <rank-number :num="item.number"></rank-number>
+                      <van-col span="6">{{ item.name }}</van-col>
+                      <van-col span="12">{{ item.schoolName }}</van-col>
+                      <van-col span="4">{{ item.rank }}</van-col>
                     </van-row>
                   </li>
                   <!-- loading底部加载 -->
@@ -193,7 +268,9 @@
                       >加载中...</van-loading
                     >
                   </li>
-                  <li v-show="communityRankListNoMore" class="noMore">已无更多数据可加载</li>
+                  <li v-show="communityRankListNoMore" class="noMore">
+                    已无更多数据可加载
+                  </li>
                 </ul>
               </div>
             </van-tab>
@@ -210,11 +287,13 @@
 
 <script>
 import Axios from "axios"
+import RankNumber from "./answerComponents/rankNumber.vue"
 import * as API from "../../../api/api.js"
 import user from "../../../mixins/user.js"
+import getDetailsRankInfo from "../../../mixins/getDetailsRankInfo.js"
 import Scroll from "./scroll.vue"
 import Vue from "vue"
-import { ActionSheet, Icon, Loading, Tab, Tabs, Sticky } from "vant"
+import { ActionSheet, Icon, Loading, Tab, Tabs, Sticky, Col, Row } from "vant"
 Vue.use(Sticky)
 const RESERVED_HEIGHT = 50
 Vue.use(ActionSheet)
@@ -222,14 +301,18 @@ Vue.use(Icon)
 Vue.use(Loading)
 Vue.use(Tab)
 Vue.use(Tabs)
+Vue.use(Col)
+Vue.use(Row)
 export default {
-  mixins: [user],
+  mixins: [user, getDetailsRankInfo],
   name: "GameRanking",
   components: {
-    Scroll
+    Scroll,
+    RankNumber
   },
   data() {
     return {
+      num: "number",
       // scroll组件滑动的Y距离
       scrollY: 0,
       // 排行榜下拉刷新的loading显示与否
@@ -260,26 +343,7 @@ export default {
       communityRankList: [],
       communitypageNo: 1,
       // 排名列表
-      rankList: [
-        "11111111111",
-        "222222222",
-        "33333333",
-        "4444444",
-        "555555555",
-        "66666666",
-        "777777777",
-        "8888888",
-        "999999999",
-        "11111111111",
-        "222222222",
-        "33333333",
-        "4444444",
-        "555555555",
-        "66666666",
-        "777777777",
-        "8888888",
-        "999999999"
-      ]
+      rankList: []
     }
   },
   created() {
@@ -288,8 +352,10 @@ export default {
     this.listenScroll = true
     // 告知scroll组件派发下拉加载事件
     this.pullup = true
+    // 获取当前学生排名数据
+    this.getDetailsRankInfo(this.userId, this.token)
     // 初始化排名
-    // this.getAllRank()
+    this.getAllRank()
   },
   mounted() {
     this.imageHeight = this.$refs.bgImage.clientHeight
@@ -297,6 +363,37 @@ export default {
     this.$refs.list.$el.style.top = `${this.imageHeight}px`
   },
   methods: {
+    // 封装为排名对象数组中的每一个对象添加排名属性的函数
+    addNumber(arr) {
+      let arrRes = []
+      let num = null
+      arr.map((item, index, arr) => {
+        if (index === 0) {
+          num = index + 1
+        } else {
+          if (arr[index].rank !== arr[index - 1].rank) {
+            num++
+          }
+        }
+        arrRes.push(
+          Object.assign(
+            {},
+            {
+              answerCount: item.answerCount,
+              classesName: item.classesName,
+              gradeName: item.gradeName,
+              id: item.id,
+              name: item.name,
+              rank: item.rank,
+              schoolName: item.schoolName,
+              studentId: item.studentId,
+              number: num
+            }
+          )
+        )
+      })
+      return arrRes
+    },
     // 获取班级排名
     getClassRank() {
       return Axios({
@@ -347,7 +444,7 @@ export default {
         }
       })
     },
-    // 获取总排名
+    // 获取社区排名
     getCommunityRank() {
       return Axios({
         url: API.getAllStudentRank,
@@ -374,16 +471,12 @@ export default {
       ]).then(
         Axios.spread(
           (getClassRank, getGradeRank, getSchoolRank, getCommunityRank) => {
-            // this.questionList = [
-            //   ...JuageRes.data.dataList,
-            //   ...SingleRes.data.dataList,
-            //   ...MultipleRes.data.dataList
-            // ]
-            // ------------到时候接口出来了编写---------------
-            // this.classRankList = [...getClassRank.data.list]
-            // this.gradeRankList = [...getGradeRank.data.list]
-            // this.schoolRankList = [...getSchoolRank.data.list]
-            // this.communityRankList = [...getCommunityRank.data.list]
+            this.classRankList = this.addNumber([...getClassRank.data])
+            this.gradeRankList = this.addNumber([...getGradeRank.data])
+            this.schoolRankList = this.addNumber([...getSchoolRank.data])
+            this.communityRankList = this.addNumber([...getCommunityRank.data])
+            // 进来默认是班级排名
+            this.rankList = this.classRankList
           }
         )
       )
@@ -391,100 +484,105 @@ export default {
     // 显示loading
     scroll(pos, maxScrollY) {
       this.scrollY = pos.y
+      // if (this.scrollY - 64 <= maxScrollY) {
+      //   this.isLoading = true
+      // }
       if (this.scrollY - 64 <= maxScrollY) {
-        this.isLoading = true
+        if (
+          (this.index === "0" && this.classRankListNoMore === true) ||
+          (this.index === "1" && this.gradeRankListNoMore === true) ||
+          (this.index === "2" && this.schoolRankListNoMore === true) ||
+          (this.index === "3" && this.communityRankListNoMore === true)
+        ) {
+          this.isLoading = false
+        } else {
+          this.isLoading = true
+        }
       }
     },
     // 滑动到排名的底部，加载更多数据
     scrollToEnd() {
-      if (this.index === "0") {
+      if (this.index === "0" && this.classRankListNoMore === false) {
         // 获取更多班级排名
-        if (!this.classRankListNoMore) {
-          // 判断是否还可以加载更多数据
-          this.getClassRank().then((res) => {
-            this.classRankList = [...this.classRankList, ...res.data.list]
-            if (res.data.length < this.pageSize) {
-              this.classRankListNoMore = true
-            }
-          })
-        }
-      } else if (this.index === "1") {
+        this.getClassRank().then((res) => {
+          if (res.data.length === 0) {
+            // 已无更多数据可加载
+            this.isLoading = false
+            this.classRankListNoMore = true
+          } else {
+            this.classRankList = this.addNumber([
+              ...this.classRankList,
+              ...res.data
+            ])
+          }
+          this.rankList = this.classRankList
+        })
+      } else if (this.index === "1" && this.gradeRankListNoMore === false) {
         // 获取更多年级排名
-        if (!this.gradeRankListNoMore) {
-          this.getGradeRank().then((res) => {
-            this.gradeRankList = [...this.gradeRankList, ...res.data.list]
-            if (res.data.length < this.pageSize) {
-              this.gradeRankListNoMore = true
-            }
-          })
-        }
-      } else if (this.index === "2") {
+        this.getGradeRank().then((res) => {
+          if (res.data.length === 0) {
+            // 已无更多数据可加载
+            this.isLoading = false
+            this.gradeRankListNoMore = true
+          } else {
+            this.gradeRankList = this.addNumber([
+              ...this.gradeRankList,
+              ...res.data
+            ])
+          }
+          this.rankList = this.gradeRankList
+        })
+      } else if (this.index === "2" && this.schoolRankListNoMore === false) {
         // 获取更多学校排名
-        if (!this.schoolRankListNoMore) {
-          this.getSchoolRank().then((res) => {
-            this.schoolRankList = [...this.schoolRankList, ...res.data.list]
-            if (res.data.length < this.pageSize) {
-              this.schoolRankListNoMore = true
-            }
-          })
-        }
-      } else if (this.index === "3") {
+        this.getSchoolRank().then((res) => {
+          if (res.data.length === 0) {
+            // 已无更多数据可加载
+            this.isLoading = false
+            this.schoolRankListNoMore = true
+          } else {
+            this.schoolRankList = this.addNumber([
+              ...this.schoolRankList,
+              ...res.data
+            ])
+          }
+          this.rankList = this.schoolRankList
+        })
+      } else if (this.index === "3" && this.communityRankListNoMore === false) {
         // 获取更多社区排名
-        if (!this.communityRankListNoMore) {
-          this.getCommunityRank().then((res) => {
-            this.communityRankList = [
+        this.getCommunityRank().then((res) => {
+          if (res.data.length === 0) {
+            // 已无更多数据可加载
+            this.isLoading = false
+            this.communityRankListNoMore = true
+          } else {
+            this.communityRankList = this.addNumber([
               ...this.communityRankList,
-              ...res.data.list
-            ]
-            if (res.data.length < this.pageSize) {
-              this.communityRankListNoMore = true
-            }
-          })
-        }
+              ...res.data
+            ])
+          }
+          this.rankList = this.communityRankList
+        })
       }
-      var list11 = [
-        "11111111111",
-        "222222222",
-        "33333333",
-        "4444444",
-        "555555555",
-        "66666666",
-        "777777777",
-        "8888888",
-        "999999999",
-        "11111111111",
-        "222222222",
-        "33333333",
-        "4444444",
-        "555555555",
-        "66666666",
-        "777777777",
-        "8888888",
-        "999999999"
-      ]
-      this.rankList = [...this.rankList, ...list11]
       this.isLoading = false
     },
     // 点击相关排名，到时候发送数据请求
     onClick(name, title) {
       this.index = name
-      // 以下代码可能有问题
-      // switch (name) {
-      //   case "0":
-      //     this.rankList = this.classRankList
-      //     break
-      //   case "1":
-      //     this.rankList = this.gradeRankList
-      //     break
-      //   case "2":
-      //     this.rankList = this.schoolRankList
-      //     break
-      //   case "3":
-      //     this.rankList = this.communityRankList
-      //     break
-      // }
-      console.log("点击了tabs")
-      console.log(this.userInfo.classId)
+      // 切换tab时,把对应数据给rankList
+      switch (name) {
+        case "0":
+          this.rankList = this.classRankList
+          break
+        case "1":
+          this.rankList = this.gradeRankList
+          break
+        case "2":
+          this.rankList = this.schoolRankList
+          break
+        case "3":
+          this.rankList = this.communityRankList
+          break
+      }
     },
     // 点击开始闯关，向外传递事件，改变showActionSheet的值，显示ActionSheet
     changeShow() {
@@ -505,7 +603,6 @@ export default {
       } else {
         blur = Math.min(20, percent * 20)
       }
-
       this.$refs.layer.style["transform"] = `translate3d(0,${translateY}px,0)`
       this.$refs.filter.style["backdrop-filter"] = `blur(${blur}px)`
       if (newVal < this.minTransalteY) {
@@ -618,9 +715,11 @@ $font-size-medium = 16px
           background-color $color-background
           .item-detail
             width 100%
+            height 100%
+            line-height 52px
             text-align center
-            .ranking
-              font-weight bold
+            .info
+              color blue
         .loadMore
           height 30px
           line-height 30px
