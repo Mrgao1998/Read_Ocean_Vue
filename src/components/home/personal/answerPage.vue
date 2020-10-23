@@ -29,7 +29,7 @@
           <!-- 题目 -->
           <div class="question-wrapper" v-if="questionList.length > 0">
             <!-- 判断是否判断题 -->
-            <span
+            <p
               class="queType"
               v-if="
                 questionList[answerIndex].answer === '0' ||
@@ -37,16 +37,14 @@
                   ? true
                   : false
               "
-              >判断题</span
-            >
+              >判断题--<span class="bookName">&laquo;{{questionList[answerIndex].bookName}}&raquo;</span></p>
             <!-- 判断是多选题 -->
-            <span
+            <p
               class="queType"
               v-else-if="questionList[answerIndex].answer.length > 1"
-              >多选题</span
-            >
+              >多选题--<span class="bookName">&laquo;{{questionList[answerIndex].bookName}}&raquo;</span></p>
             <!-- 判断是否单选题 -->
-            <span class="queType" v-else>单选题</span>
+            <p class="queType" v-else>单选题--<span class="bookName">&laquo;{{questionList[answerIndex].bookName}}&raquo;</span></p>
             <!-- 题目的描述 -->
             <span class="question">
               {{ questionList[answerIndex].question }}
@@ -241,9 +239,6 @@ export default {
       // 添加的积分
       integral: 0,
       nowTime: 0, // 开始答题时间戳，用于分析答题时间段分布
-      // rightSingleQuestionList: [], // 答对单选题id数组
-      // rightMultipleChoiceQuetionList: [], // 答对多选题id数组
-      // rightTrueOrFalseQuestionList: [], // 答对判断题id数组
       totalSingleNum: 0, // 总单选题数目
       totalMultipleNum: 0, // 总多选题数目
       totalTOFNum: 0, // 总判断题数目
@@ -710,6 +705,8 @@ export default {
             font-size 16px
             font-weight bold
             margin-bottom 10px
+            .bookName
+              color red
         .answerOptions
           .van-radio
             margin 30px
