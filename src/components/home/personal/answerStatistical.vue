@@ -6,36 +6,31 @@
         <mt-button slot="left" icon="back" @click="$router.go(-1)"></mt-button>
       </mt-header>
       <!-- 主要内容 -->
-      <div class="popup__content">
-        <!-- 各年级答题总数柱状图（直接所有学生） -->
-        <!-- 各年级的答题积分柱状图 -->
-        <!-- 各年级答题平均时长柱状图（直接所有学生） -->
-
+      <div :class='[times === 4 ?"showpopup__content":"popup__content"]'>
         <!--各年级闯关信息统计-->
         <person-histogram
-          :picType="type4"
           :picTitle="title4"
-          :picTerm="term"
+          @addTimes="addTimes"
         ></person-histogram>
         <!-- 各积分段中男女生比例柱状图 -->
         <person-histogram
-          :picType="type5"
           :picTitle="title5"
-          :picTerm="term"
+          @addTimes="addTimes"
         ></person-histogram>
         <!-- 答题时间段分布柱状图（所有同学）-->
         <person-histogram
-          :picType="type6"
           :picTitle="title6"
-          :picTerm="term"
+          @addTimes="addTimes"
         ></person-histogram>
-        <!-- 答题积分前三的班级 -->
+        <!-- 答题积分前五的学校 -->
         <person-histogram
-          :picType="type7"
           :picTitle="title7"
-          :picTerm="term"
+          @addTimes="addTimes"
         ></person-histogram>
-        <!-- 答题积分前三的学校 -->
+      </div>
+      <!-- 没加载数据时，显示loading -->
+      <div class="loading-container" v-if="times != 4">
+        <van-loading type="spinner" color="#1989fa" />
       </div>
     </div>
   </transition>
@@ -43,6 +38,9 @@
 
 <script>
 import PersonHistogram from "./answermoduleEcharts/personHistogram.vue"
+import Vue from "vue"
+import { Loading } from "vant"
+Vue.use(Loading)
 export default {
   name: "AnswerStatistical",
   components: {
@@ -50,15 +48,17 @@ export default {
   },
   data() {
     return {
-      term: 1,
-      type4: "4",
       title4: "各年级闯关信息统计",
-      type5: "5",
       title5: "各积分段中男女生比例",
-      type6: "6",
       title6: "答题时间段分布(所有同学)",
-      type7: "7",
-      title7: "答题积分top5学校"
+      title7: "答题积分top5学校",
+      times: 0
+    }
+  },
+  methods: {
+    // 请求一次加1，用于确保数据全部加载完，未加载完就显示loading
+    addTimes() {
+      this.times++
     }
   }
 }
@@ -85,7 +85,14 @@ export default {
     background-color #9CB8CA
     align-items center
     font-size 1.2rem
+  .showpopup__content
+    visibility visible
+    flex 1
+    width 100%
+    -webkit-overflow-scrolling touch
+    overflow-y scroll
   .popup__content
+    visibility hidden
     flex 1
     width 100%
     -webkit-overflow-scrolling touch
@@ -105,4 +112,12 @@ export default {
         color pink
         font-size 20px
         font-weight bold
+  .loading-container
+    flex 1
+    position: absolute
+    width: 100%
+    top: 50%
+    transform: translateY(-50%)
+    .van-loading
+      text-align center
 </style>
