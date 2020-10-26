@@ -389,6 +389,20 @@ export default {
         .then(() => {
           // on confirm
           Toast("您已离开答题闯关")
+          // Axios({
+          //   url: API.reduceAnswerCountByStudentId,
+          //   method: "POST",
+          //   data: {
+          //     studentId: this.userId
+          //   },
+          //   headers: {
+          //     Authorization: this.token
+          //   }
+          // }).then(res => {
+          //   console.log(res)
+          // }).catch(err => {
+          //   errorHandler(err)
+          // })
           this.$emit("closeAnswerPage")
           clearInterval(this.time)
         })
