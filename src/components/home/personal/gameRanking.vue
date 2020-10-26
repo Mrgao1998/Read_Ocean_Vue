@@ -30,7 +30,7 @@
           <van-tabs @click="onClick" animated>
             <!-- 班级排名 -->
             <van-tab title="班级排名" name="0">
-              <div class="rank-list">
+              <div class="rank-list" v-if="tabTimes === 2">
                 <ul class="rank-ul">
                   <van-row
                     type="flex"
@@ -87,6 +87,10 @@
                     已无更多数据可加载
                   </li>
                 </ul>
+              </div>
+              <!-- 没加载数据时，显示loading -->
+              <div class="loading-container" v-else>
+                <van-loading type="spinner" color="#1989fa" />
               </div>
             </van-tab>
             <!-- 年级排名 -->
@@ -294,11 +298,11 @@ import getDetailsRankInfo from "../../../mixins/getDetailsRankInfo.js"
 import Scroll from "./scroll.vue"
 import Vue from "vue"
 import { ActionSheet, Icon, Loading, Tab, Tabs, Sticky, Col, Row } from "vant"
+Vue.use(Loading)
 Vue.use(Sticky)
 const RESERVED_HEIGHT = 50
 Vue.use(ActionSheet)
 Vue.use(Icon)
-Vue.use(Loading)
 Vue.use(Tab)
 Vue.use(Tabs)
 Vue.use(Col)
@@ -473,6 +477,8 @@ export default {
             this.gradeRankList = this.addNumber([...getGradeRank.data])
             this.schoolRankList = this.addNumber([...getSchoolRank.data])
             this.communityRankList = this.addNumber([...getCommunityRank.data])
+            // tabTimes作用是当前学生排名以及班级排名两个接口都获取了数据后，再显示，不然就显示loading
+            this.tabTimes++
             // 进来默认是班级排名
             this.rankList = this.classRankList
           }
@@ -692,6 +698,14 @@ $font-size-medium = 16px
     background: $color-background
     .rank-list-wrapper
       // padding: 20px 30px
+      .loading-container
+        flex 1
+        position: absolute
+        width: 100%
+        top: 50%
+        transform: translateY(-500%)
+        .van-loading
+          text-align center
       .rank-list
         .rank-title
           height 30px
