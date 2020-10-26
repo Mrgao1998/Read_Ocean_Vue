@@ -6,76 +6,74 @@
         <mt-button slot="left" icon="back" @click="$router.go(-1)"></mt-button>
       </mt-header>
       <!-- 主要内容 -->
-      <div class="popup__content">
+      <div class="popup__content" v-if="isShow">
         <p class="personName-wrapper">
-          可爱的<span class="personName">{{RankInfo_studentName}}同学</span>
+          可爱的<span class="personName">{{ RankInfo_studentName }}同学</span>
         </p>
         <p class="rightTotal-wrapper">
-          个人闯关积分为：<span class="rightTotal">{{RankInfo_rank}}</span>
+          个人闯关积分为：<span class="rightTotal">{{ RankInfo_rank }}</span>
         </p>
         <p class="rightTotal-wrapper">
-          累计答对题目总数为：<span class="rightTotal">{{RankInfo_totalCount}}</span>
+          累计答对题目总数为：<span class="rightTotal">{{
+            RankInfo_rightCount
+          }}</span>
         </p>
         <p class="rightTotal-wrapper">
-          每次答题平均时长为：<span class="rightTotal">{{RankInfo_avgTime + 's'}}</span>
+          每次答题平均时长为：<span class="rightTotal">{{
+            RankInfo_avgTime + "s"
+          }}</span>
         </p>
         <!--答对题目类型占比分布-->
-        <correct-accuracy :picTerm="term"></correct-accuracy>
+        <correct-accuracy :ResData="ResData"></correct-accuracy>
         <!--各类型题目正确率柱状图-->
         <person-histogram
-          :picType="type1"
+          :ResData="ResData"
           :picTitle="title1"
-          :picTerm="term"
         ></person-histogram>
         <!--各类型题目答对数量柱状图-->
         <person-histogram
-          :picType="type2"
+          :ResData="ResData"
           :picTitle="title2"
-          :picTerm="term"
         ></person-histogram>
-        <!--答题时间段分布柱状图-->
+        <!--答题时间段分布折线图-->
         <person-histogram
-          :picType="type3"
+          :ResData="ResData"
           :picTitle="title3"
-          :picTerm="term"
-        ></person-histogram>
-        <person-histogram
-          :picType="type8"
-          :picTitle="title8"
-          :picTerm="term"
         ></person-histogram>
         <!-- <p>各年级题目占比</p> -->
+        <person-histogram
+          :ResData="ResData"
+          :picTitle="title8"
+        ></person-histogram>
+      </div>
+      <!-- 没加载数据时，显示loading -->
+      <div class="loading-container" v-else>
+        <van-loading type="spinner" color="#1989fa" />
       </div>
     </div>
   </transition>
 </template>
 
 <script>
-import Axios from "axios"
-import * as API from "../../../api/api.js"
-import user from "../../../mixins/user.js"
-import errorHandler from "../../../mixins/errorHandler.js"
 import getDetailsRankInfo from "../../../mixins/getDetailsRankInfo.js"
 import CorrectAccuracy from "./answermoduleEcharts/correctAccuracy.vue"
 import PersonHistogram from "./answermoduleEcharts/personHistogram.vue"
+import Vue from "vue"
+import { Loading } from "vant"
+Vue.use(Loading)
 export default {
   name: "personalAnswerdetail",
   components: {
     CorrectAccuracy,
     PersonHistogram
   },
-  mixins: [errorHandler, getDetailsRankInfo],
+  mixins: [getDetailsRankInfo],
   data() {
     return {
-      term: 1,
-      type1: "1",
       title1: "各类型题目正确率柱状图",
-      type2: "2",
       title2: "各类型题目答对数量柱状图",
-      type3: "3",
-      title3: "答题时间段分布柱状图",
-      type8: "8",
-      title8: "各年级所答题目数"
+      title3: "答题时间段分布折线图",
+      title8: "各年级所答题目数柱状图"
     }
   }
 }
@@ -122,4 +120,12 @@ export default {
         color pink
         font-size 20px
         font-weight bold
+  .loading-container
+    flex 1
+    position: absolute
+    width: 100%
+    top: 50%
+    transform: translateY(-50%)
+    .van-loading
+      text-align center
 </style>
