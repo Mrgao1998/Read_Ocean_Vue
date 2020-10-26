@@ -10,8 +10,9 @@
       <div class="popup__content">
         <div class="content_wrapper">
           <span class="popup__content__title">
-            今日剩余<span class="times">{{ times }}</span
-            >次答题闯关次数
+            今日剩余
+            <span class="times">{{ times }}</span>
+            次答题闯关次数
           </span>
           <van-row type="flex" justify="space-around" class="vanRow">
             <!-- 排行榜 -->
