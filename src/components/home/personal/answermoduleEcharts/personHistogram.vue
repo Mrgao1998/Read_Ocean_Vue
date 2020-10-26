@@ -1,19 +1,11 @@
 <template>
   <div>
-    <div
-      style="width: 100%; height: 300%"
-      :id="picTypeFromDad"
-      class="histogram"
-    ></div>
+    <div style="width: 100%; height: 300%" :id="picTitle"></div>
   </div>
 </template>
 <script>
-// import Axios from "axios"
-// import * as API from "../../../../api/api.js"
 import errorHandler from "../../../../mixins/errorHandler.js"
-import getHistogram from "../../../../mixins/getHistogram.js"
-import getPersonalHistogram from "../../../../mixins/getPersonalHistogram.js"
-import user from "../../../../mixins/user.js"
+import getStatistics from "../../../../mixins/getStatistics.js"
 // 引入基本模板
 let echarts = require("echarts")
 // 引入柱状图组件
@@ -24,344 +16,330 @@ require("echarts/lib/component/title")
 
 export default {
   name: "PersonHistogram",
-  mixins: [errorHandler, getHistogram, user, getPersonalHistogram],
+  mixins: [getStatistics],
   data() {
-    return {
-      picTypeFromDad: "",
-      picTitleFromDad: "",
-      picTermFromDad: ""
-    }
+    return {}
   },
-  props: ["picType", "picTitle", "picTerm"],
-  watch: {
-    picTerm: function (newVal) {
-      this.init()
-    }
+  props: {
+    ResData: Object,
+    picTitle: String
+  },
+  mounted() {
+    this.init()
   },
   methods: {
     init() {
-      this.picTitleFromDad = this.picTitle // 拿到不同的图的要求，调用不同的接口来显示不同的柱状图
-      this.picTypeFromDad = this.picType // 拿到不同的图的要求，调用不同的接口来显示不同的柱状图
-      this.picTermFromDad = this.picTerm
-      // console.log(this.picTypeFromDad)
-      if (this.picTypeFromDad === "1") {
-        this.getBookRanking({
-          // 各类型题目正确率柱状图
-          userType: this.userType,
-          schoolId: this.schoolId,
-          gradeName: this.userInfo.grade,
-          classId: this.userInfo.classId,
-          studentId: this.userId,
-          termId: this.picTermFromDad,
-          token: this.token
-        })
-          .then((res) => {
-            var myChart = echarts.init(
-              document.getElementById(this.picTypeFromDad)
-            )
-            var option = {
-              // 标题
-              title: {
-                text: this.picTitleFromDad + "(%)",
-                left: "center",
-                top: 0,
-                textStyle: {
-                  color: "#ccc",
-                  fontStyle: "italic"
-                }
-              },
-              tooltip: {
-                // 自定义悬浮框内容
-                formatter: function (params) {
-                  console.log(params)
-                  return `<span style="color:#00FFFF;text-align:center;">${params.name}</span><br/>
+      let myChart = echarts.init(document.getElementById(this.picTitle))
+      if (this.picTitle === "各类型题目正确率柱状图") {
+        console.log(this.ResData)
+        let option = {
+          // 标题配置
+          title: {
+            text: this.picTitle,
+            left: "center",
+            top: 0,
+            textStyle: {
+              color: "yellow"
+            }
+          },
+          // 点击时提示框设置
+          tooltip: {
+            // 自定义悬浮框内容
+            formatter: function (params) {
+              return `<span style="color:#00FFFF;text-align:center;">${params.name}</span><br/>
                         ${params.marker}正确率：<span style="color:yellow">${params.value}%</span> <br/>`
-                }
-              },
-              backgroundColor: "#45515a",
-              // x轴
-              xAxis: {
-                data: ["全部", "单选题", "判断题", "多选题"],
-                axisLabel: {
-                  show: true,
-                  textStyle: {
-                    color: "#eee",
-                    fontSize: 14
-                  }
-                }
-              },
-              // y轴
-              yAxis: {
-                axisLabel: {
-                  show: true,
-                  textStyle: {
-                    color: "#eee",
-                    fontSize: 14
-                  }
-                }
-              },
-              // 系列
-              series: [
-                {
-                  name: "正确率",
-                  type: "bar",
-                  data: [27.5, 22.4, 34.9, 21.4],
-                  itemStyle: {
-                    normal: {
-                      // 每个柱子的颜色即为colorList数组里的每一项，如果柱子数目多于colorList的长度，则柱子颜色循环使用该数组
-                      color: function (params) {
-                        var colorList = [
-                          "rgb(223,107,89)",
-                          "rgb(210,173,165)",
-                          "rgb(225,159,131)",
-                          "rgb(159,205,238)"
-                        ]
-                        return colorList[params.dataIndex]
-                      }
-                      // label: {
-                      //   show: true, // 开启显示
-                      //   position: "top", // 在上方显示
-                      //   textStyle: { // 数值样式
-                      //     color: "white",
-                      //     fontSize: 14
-                      //   }
-                      // }
-                    }
-                  }
-                }
-              ],
-              grid: {
-                left: 35,
-                top: 35,
-                right: 35,
-                bottom: 35
+            }
+          },
+          backgroundColor: "#45515a",
+          // x轴
+          xAxis: {
+            // X坐标轴配置
+            axisLine: {
+              lineStyle: {
+                type: "solid",
+                color: "#fff",
+                width: "1"
+              }
+            },
+            // 去除网格线
+            splitLine: { show: false },
+            data: ["单选题", "判断题", "多选题"],
+            axisLabel: {
+              show: true,
+              textStyle: {
+                color: "yellow",
+                fontSize: 12
               }
             }
-            // 更改数值
-            // for (var i = 0; i <= 2; i++) {
-            //   option.series[0].data[i] = res.data.result.data[i].num
-            // }
-            myChart.setOption(option)
-          })
-          .catch((err) => {
-            console.log(err)
-          })
-      } else if (this.picTypeFromDad === "2") {
+          },
+          // y轴
+          yAxis: {
+            axisLine: {
+              lineStyle: {
+                type: "solid",
+                color: "#fff",
+                width: "1"
+              }
+            },
+            splitLine: { show: false },
+            axisLabel: {
+              show: true,
+              textStyle: {
+                color: "yellow",
+                fontSize: 12
+              }
+            }
+          },
+          // 系列
+          series: [
+            {
+              name: "正确率",
+              type: "bar",
+              barWidth: 40,
+              data: [
+                (
+                  (
+                    this.ResData.rightSingleNum / this.ResData.totalCount
+                  ).toFixed(3) * 100
+                ).toFixed(1),
+                (
+                  (this.ResData.rightTofNum / this.ResData.totalCount).toFixed(
+                    3
+                  ) * 100
+                ).toFixed(1),
+                (
+                  (
+                    this.ResData.rightMultipleNum / this.ResData.totalCount
+                  ).toFixed(3) * 100
+                ).toFixed(1)
+              ],
+              itemStyle: {
+                normal: {
+                  // 每个柱子的颜色即为colorList数组里的每一项，如果柱子数目多于colorList的长度，则柱子颜色循环使用该数组
+                  color: function (params) {
+                    var colorList = [
+                      "rgb(223,107,89)",
+                      "rgb(225,159,131)",
+                      "rgb(159,205,238)"
+                    ]
+                    return colorList[params.dataIndex]
+                  }
+                }
+              }
+            }
+          ],
+          grid: {
+            left: 35,
+            top: 50,
+            right: 35,
+            bottom: 35
+          }
+        }
+        myChart.setOption(option)
+      } else if (this.picTitle === "各类型题目答对数量柱状图") {
         // 各类型题目答对数量柱状图
-        this.getTaskRate({
-          userType: this.userType,
-          schoolId: this.schoolId,
-          gradeName: this.userInfo.grade,
-          classId: this.userInfo.classId,
-          studentId: this.userId,
-          termId: this.picTermFromDad,
-          token: this.token
-        })
-          .then((res) => {
-            var myChart = echarts.init(
-              document.getElementById(this.picTypeFromDad)
-            )
-            var option = {
-              title: {
-                text: this.picTitleFromDad,
-                left: "center",
-                top: 0,
-                textStyle: {
-                  color: "#ccc",
-                  fontStyle: "italic" // 标题字体
-                }
-              },
-              tooltip: {
-                // 自定义悬浮框内容
-                formatter: function (params) {
-                  console.log(params)
-                  return `<span style="color:#00FFFF;text-align:center;">${params.name}</span><br/>
+        let option = {
+          title: {
+            text: this.picTitle,
+            left: "center",
+            top: 0,
+            textStyle: {
+              color: "#1E90FF"
+            }
+          },
+          tooltip: {
+            // 自定义悬浮框内容
+            formatter: function (params) {
+              return `<span style="color:#00FFFF;text-align:center;">${params.name}</span><br/>
                         ${params.marker}答对数为：<span style="color:yellow">${params.value}</span> <br/>`
-                }
-              },
-              backgroundColor: "#45515a",
-              xAxis: {
-                data: ["全部", "单选题", "判断题", "多选题"],
-                axisLabel: {
-                  show: true,
-                  textStyle: {
-                    color: "#fff",
-                    fontSize: 14
-                  }
-                }
-              },
-              yAxis: {
-                axisLabel: {
-                  show: true,
-                  textStyle: {
-                    color: "#fff",
-                    fontSize: 14
-                  }
-                }
-              },
-              series: [
-                {
-                  name: "完成率",
-                  type: "bar",
-                  data: [60, 30, 20, 10],
-                  itemStyle: {
-                    normal: {
-                      // 每个柱子的颜色即为colorList数组里的每一项，如果柱子数目多于colorList的长度，则柱子颜色循环使用该数组
-                      color: function (params) {
-                        var colorList = [
-                          "rgb(186,218,219)",
-                          "rgb(124,192,210)",
-                          "rgb(29,126,143)",
-                          "rgb(159,205,238)"
-                        ]
-                        return colorList[params.dataIndex]
-                      }
-                      // label: {
-                      //   show: true, // 开启显示
-                      //   position: "top", // 在上方显示
-                      //   textStyle: { // 数值样式
-                      //     color: "white",
-                      //     fontSize: 14
-                      //   }
-                      // }
+            }
+          },
+          backgroundColor: "#45515a",
+          xAxis: {
+            splitLine: { show: false },
+            data: ["全部", "单选题", "判断题", "多选题"],
+            axisLabel: {
+              show: true,
+              textStyle: {
+                color: "#1E90FF",
+                fontSize: 12
+              }
+            },
+            axisLine: {
+              lineStyle: {
+                type: "solid",
+                color: "#fff",
+                width: "1"
+              }
+            }
+          },
+          yAxis: {
+            splitLine: { show: false },
+            axisLabel: {
+              show: true,
+              textStyle: {
+                color: "#1E90FF",
+                fontSize: 12
+              }
+            },
+            axisLine: {
+              lineStyle: {
+                type: "solid",
+                color: "#fff",
+                width: "1"
+              }
+            }
+          },
+          series: [
+            {
+              type: "bar",
+              data: [
+                this.ResData.rightCount,
+                this.ResData.rightSingleNum,
+                this.ResData.rightTofNum,
+                this.ResData.rightMultipleNum
+              ],
+              barWidth: 40,
+              itemStyle: {
+                normal: {
+                  // 每个柱子的颜色即为colorList数组里的每一项，如果柱子数目多于colorList的长度，则柱子颜色循环使用该数组
+                  color: function (params) {
+                    var colorList = [
+                      "rgb(186,218,219)",
+                      "rgb(124,192,210)",
+                      "rgb(29,126,143)",
+                      "rgb(159,205,238)"
+                    ]
+                    return colorList[params.dataIndex]
+                  },
+                  label: {
+                    show: true, // 开启显示
+                    position: "top", // 在上方显示
+                    textStyle: {
+                      // 数值样式
+                      color: "white",
+                      fontSize: 12
                     }
                   }
                 }
-              ],
-              grid: {
-                left: 35,
-                top: 45,
-                right: 35,
-                bottom: 35
               }
             }
-            // 数据插入
-            // for (var i = 0; i <= 2; i++) {
-            //   option.series[0].data[i] = res.data.result.data[i].num
-            // }
-            myChart.setOption(option)
-          })
-          .catch((err) => {
-            console.log(err)
-          })
-      } else if (this.picTypeFromDad === "3") {
+          ],
+          grid: {
+            left: 35,
+            top: 45,
+            right: 35,
+            bottom: 35
+          }
+        }
+        myChart.setOption(option)
+      } else if (this.picTitle === "答题时间段分布折线图") {
         // 答题时间段分布柱状图
-        this.getIntegrateRanking({
-          userType: this.userType,
-          schoolId: this.schoolId,
-          gradeName: this.userInfo.grade,
-          classId: this.userInfo.classId,
-          studentId: this.userId,
-          termId: this.picTermFromDad,
-          token: this.token
-        })
-          .then((res) => {
-            // console.log(res.data.result.data)
-            var myChart = echarts.init(
-              document.getElementById(this.picTypeFromDad)
-            )
-            var option = {
-              title: {
-                text: this.picTitleFromDad,
-                left: "center",
-                top: 0,
-                textStyle: {
-                  color: "#ccc",
-                  fontStyle: "italic" // 标题字体
-                }
-              },
-              tooltip: {
-                // 自定义悬浮框内容
-                formatter: function (params) {
-                  console.log(params)
-                  return `<span style="color:#00FFFF;text-align:center;">${params.seriesName}</span><br/>
-                        ${params.marker}${params.name}答题次数：<span style="color:yellow">${params.value}次</span> <br/>`
-                }
-              },
-              backgroundColor: "#45515a",
-              xAxis: {
-                data: [
-                  "00-04时",
-                  "04-08时",
-                  "08-12时",
-                  "12-16时",
-                  "16-20时",
-                  "20-24时"
-                ],
-                axisLabel: {
-                  show: true,
-                  textStyle: {
-                    color: "#fff",
-                    fontSize: 10
-                  }
-                }
-              },
-              yAxis: {
-                axisLabel: {
-                  show: true,
-                  textStyle: {
-                    color: "#fff",
-                    fontSize: 12
-                  }
-                }
-              },
-              series: [
-                {
-                  name: "答题时间段",
-                  type: "bar",
-                  data: [1, 1, 3, 4, 2, 1],
-                  itemStyle: {
-                    normal: {
-                      // 每个柱子的颜色即为colorList数组里的每一项，如果柱子数目多于colorList的长度，则柱子颜色循环使用该数组
-                      color: function (params) {
-                        var colorList = [
-                          "rgb(213,128,18)",
-                          "rgb(233,185,60)",
-                          "rgb(241,226,152)",
-                          "rgb(159,205,238)",
-                          "rgb(188,169,176)",
-                          "rgb(177,111,222)"
-                        ]
-                        return colorList[params.dataIndex]
-                      }
-                    }
-                  }
-                }
-              ],
-              grid: {
-                left: 35,
-                top: 35,
-                right: 35,
-                bottom: 35
+        let option = {
+          title: {
+            text: this.picTitle,
+            left: "center",
+            top: 0,
+            textStyle: {
+              color: "#EE6A50"
+            }
+          },
+          tooltip: {
+            trigger: "axis",
+            // 自定义悬浮框内容
+            formatter: function (params) {
+              return `<span style="color:#00FFFF;text-align:center;">${params[0].axisValue}</span><br/>
+                        ${params[0].marker}答题次数：<span style="color:yellow">${params[0].data}次</span> <br/>`
+            },
+            axisPointer: {
+              // 坐标轴指示器，坐标轴触发有效，
+              type: "line", // 默认为line，line直线，cross十字准星，shadow阴影
+              crossStyle: {
+                color: "#fff"
               }
             }
-            // for (var i = 0; i <= 2; i++) {
-            //   option.series[0].data[i] = res.data.result.data[i].num
-            // }
-            myChart.setOption(option)
-          })
-          .catch((err) => {
-            console.log(err)
-          })
-      } else if (this.picTypeFromDad === "4") {
-        // 各年级闯关信息统计
-        this.getAnswerAccuracy({
-          userType: this.userType,
-          schoolId: this.schoolId,
-          gradeName: this.userInfo.grade,
-          classId: this.userInfo.classId,
-          studentId: this.userId,
-          termId: this.picTermFromDad,
-          token: this.token
-        })
+          },
+          backgroundColor: "#45515a",
+          xAxis: {
+            data: [
+              "00-04时",
+              "04-08时",
+              "08-12时",
+              "12-16时",
+              "16-20时",
+              "20-24时"
+            ],
+            axisLine: {
+              lineStyle: {
+                type: "solid",
+                color: "#fff",
+                width: "1"
+              }
+            },
+            axisLabel: {
+              show: true,
+              textStyle: {
+                color: "#EE6A50",
+                fontSize: 10
+              }
+            }
+          },
+          yAxis: {
+            axisLabel: {
+              show: true,
+              textStyle: {
+                color: "#EE6A50",
+                fontSize: 12
+              }
+            },
+            axisLine: {
+              lineStyle: {
+                type: "solid",
+                color: "#fff",
+                width: "1"
+              }
+            }
+          },
+          series: [
+            {
+              name: "答题时间段",
+              type: "line",
+              symbolSize: 8, // 拐点圆的大小
+              color: ["#EE6A50"], // 折线条的颜色
+              data: [
+                this.ResData.answerHabit.zero,
+                this.ResData.answerHabit.four,
+                this.ResData.answerHabit.eight,
+                this.ResData.answerHabit.twelve,
+                this.ResData.answerHabit.sixteen,
+                this.ResData.answerHabit.twenty
+              ],
+              itemStyle: {
+                normal: {
+                  lineStyle: {
+                    width: 2,
+                    type: "solid" // 'dotted'虚线 'solid'实线
+                  }
+                }
+              }
+            }
+          ],
+          grid: {
+            left: 35,
+            top: 50,
+            right: 35,
+            bottom: 35
+          }
+        }
+        myChart.setOption(option)
+      } else if (this.picTitle === "各年级闯关信息统计") {
+        // 获取各年级闯关信息统计
+        this.getRankInfoGroupByGrade()
           .then((res) => {
-            // console.log(res.data.result.data)
-            var myChart = echarts.init(
-              document.getElementById(this.picTypeFromDad)
-            )
-            var option = {
+            const data = res.data.data
+            let option = {
               title: {
-                text: this.picTitleFromDad,
+                text: this.picTitle,
                 left: "center",
                 top: 0,
                 textStyle: {
@@ -400,68 +378,78 @@ export default {
                 }
               },
               yAxis: {
+                type: "log",
                 axisLabel: {
                   show: true,
                   textStyle: {
                     color: "#fff",
-                    fontSize: 12
-                  }
+                    fontSize: 10
+                  },
+                  interval: 0,
+                  rotate: 30
                 }
               },
               series: [
                 {
                   name: "答题总数",
                   type: "bar",
-                  data: [50, 60, 70, 80, 90, 100],
+                  data: [
+                    data.oneTotalQuestionNum,
+                    data.twoTotalQuestionNum,
+                    data.threeTotalQuestionNum,
+                    data.fourTotalQuestionNum,
+                    data.fiveTotalQuestionNum,
+                    data.sixTotalQuestionNum
+                  ],
                   color: "green"
                 },
                 {
                   name: "答题积分",
                   type: "bar",
-                  data: [150, 200, 250, 300, 350, 400],
+                  data: [
+                    data.oneTotalRank,
+                    data.twoTotalRank,
+                    data.threeTotalRank,
+                    data.fourTotalRank,
+                    data.fiveTotalRank,
+                    data.sixTotalRank
+                  ],
                   color: "#87CEFA"
                 },
                 {
                   name: "答题平均时长(s)",
                   type: "bar",
-                  data: [120, 110, 100, 90, 80, 70],
+                  data: [
+                    data.oneAvgTime,
+                    data.twoAvgTime,
+                    data.threeAvgTime,
+                    data.fiveAvgTime,
+                    data.fiveAvgTime,
+                    data.fiveAvgTime
+                  ],
                   color: "pink"
                 }
               ],
               grid: {
-                left: 35,
+                left: 45,
                 top: 75,
                 right: 35,
                 bottom: 35
               }
             }
-            // for (var i = 0; i <= 2; i++) {
-            //   option.series[0].data[i] = res.data.result.data[i].num
-            // }
             myChart.setOption(option)
+            this.$emit("addTimes")
+          }).catch(err => {
+            errorHandler(err)
           })
-          .catch((err) => {
-            console.log(err)
-          })
-      } else if (this.picTypeFromDad === "5") {
+      } else if (this.picTitle === "各积分段中男女生比例") {
         // 各积分段中男女生比例
-        this.getAnswerAccuracy({
-          userType: this.userType,
-          schoolId: this.schoolId,
-          gradeName: this.userInfo.grade,
-          classId: this.userInfo.classId,
-          studentId: this.userId,
-          termId: this.picTermFromDad,
-          token: this.token
-        })
+        this.getGenderDistribution()
           .then((res) => {
-            // console.log(res.data.result.data)
-            var myChart = echarts.init(
-              document.getElementById(this.picTypeFromDad)
-            )
-            var option = {
+            const data = res.data.data
+            let option = {
               title: {
-                text: this.picTitleFromDad,
+                text: this.picTitle,
                 left: "center",
                 top: 0,
                 textStyle: {
@@ -511,13 +499,25 @@ export default {
                 {
                   name: "男",
                   type: "bar",
-                  data: [56, 65, 70, 82],
+                  data:
+                  [
+                    ((data.firstMan / (data.firstMan + data.firstFemale)) * 100).toFixed(1),
+                    ((data.secondMan / (data.secondMan + data.secondFemale)) * 100).toFixed(1),
+                    ((data.thirdMan / (data.thirdFemale + data.thirdMan)) * 100).toFixed(1),
+                    ((data.fourthMan / (data.fourthMan + data.fourthFemale)) * 100).toFixed(1)
+                  ],
                   color: "#00BFFF"
                 },
                 {
                   name: "女",
                   type: "bar",
-                  data: [44, 35, 30, 19],
+                  data:
+                  [
+                    ((data.firstFemale / (data.firstMan + data.firstFemale)) * 100).toFixed(1),
+                    ((data.secondFemale / (data.secondMan + data.secondFemale)) * 100).toFixed(1),
+                    ((data.thirdFemale / (data.thirdFemale + data.thirdMan)) * 100).toFixed(1),
+                    ((data.fourthFemale / (data.fourthMan + data.fourthFemale)) * 100).toFixed(1)
+                  ],
                   color: "#FF69B4"
                 }
               ],
@@ -528,33 +528,20 @@ export default {
                 bottom: 35
               }
             }
-            // for (var i = 0; i <= 2; i++) {
-            //   option.series[0].data[i] = res.data.result.data[i].num
-            // }
             myChart.setOption(option)
+            this.$emit("addTimes")
           })
           .catch((err) => {
             console.log(err)
           })
-      } else if (this.picTypeFromDad === "6") {
+      } else if (this.picTitle === "答题时间段分布(所有同学)") {
         // 答题时间段分布柱状图（所有同学）
-        this.getAnswerAccuracy({
-          userType: this.userType,
-          schoolId: this.schoolId,
-          gradeName: this.userInfo.grade,
-          classId: this.userInfo.classId,
-          studentId: this.userId,
-          termId: this.picTermFromDad,
-          token: this.token
-        })
+        this.getTotalAnswerHabit()
           .then((res) => {
-            // console.log(res.data.result.data)
-            var myChart = echarts.init(
-              document.getElementById(this.picTypeFromDad)
-            )
-            var option = {
+            const data = res.data.data
+            let option = {
               title: {
-                text: this.picTitleFromDad,
+                text: this.picTitle,
                 left: "center",
                 top: 0,
                 textStyle: {
@@ -588,45 +575,45 @@ export default {
                   show: true,
                   textStyle: {
                     color: "#fff",
-                    fontSize: 12
-                  }
+                    fontSize: 10
+                  },
+                  interval: 0,
+                  rotate: 30
                 }
               },
               series: [
                 {
                   name: "该时间段答题总数",
                   type: "line",
-                  data: [56, 65, 70, 82, 99, 3],
+                  data:
+                  [
+                    data.zero,
+                    data.four,
+                    data.eight,
+                    data.twelve,
+                    data.sixteen,
+                    data.twenty
+                  ],
                   color: "#00BFFF"
                 }
               ],
               grid: {
-                left: 35,
+                left: 45,
                 top: 35,
                 right: 35,
                 bottom: 35
               }
             }
-            // for (var i = 0; i <= 2; i++) {
-            //   option.series[0].data[i] = res.data.result.data[i].num
-            // }
             myChart.setOption(option)
+            this.$emit("addTimes")
           })
           .catch((err) => {
             console.log(err)
           })
-      } else if (this.picTypeFromDad === "7") {
+      } else if (this.picTitle === "答题积分top5学校") {
         // 答题积分top5学校
-        this.getTop5SchoolRank({
-          token: this.token
-        })
+        this.getTop5SchoolRank()
           .then((res) => {
-            // console.log(res.data.result.data)
-            var myChart = echarts.init(
-              document.getElementById(this.picTypeFromDad)
-            )
-            // -----------------------------------------
-
             var labelSetting = {
               normal: {
                 show: true,
@@ -639,10 +626,10 @@ export default {
             }
             // 设置最大值
             // var maxData = res.data.data[0].totalRank
-            var option = {
+            let option = {
               // 题目设置
               title: {
-                text: this.picTitleFromDad,
+                text: this.picTitle,
                 left: "center",
                 top: 0,
                 textStyle: {
@@ -751,95 +738,113 @@ export default {
               option.dataset.source[i][1] = res.data.data[i - 1].schoolName
             }
             myChart.setOption(option)
+            this.$emit("addTimes")
           })
           .catch((err) => {
-            console.log(err)
+            errorHandler(err)
           })
-      } else if (this.picTypeFromDad === "8") {
-        // 答题时间段分布柱状图（所有同学）
-        this.getAnswerAccuracy({
-          userType: this.userType,
-          schoolId: this.schoolId,
-          gradeName: this.userInfo.grade,
-          classId: this.userInfo.classId,
-          studentId: this.userId,
-          termId: this.picTermFromDad,
-          token: this.token
-        })
-          .then((res) => {
-            // console.log(res.data.result.data)
-            var myChart = echarts.init(
-              document.getElementById(this.picTypeFromDad)
-            )
-            var option = {
-              title: {
-                text: this.picTitleFromDad,
-                left: "center",
-                top: 0,
-                textStyle: {
-                  color: "#ccc",
-                  fontStyle: "italic" // 标题字体
-                }
-              },
-              tooltip: {
-                trigger: "axis"
-              },
-              backgroundColor: "#45515a",
-              xAxis: {
-                data: [
-                  "幼儿园",
-                  "一年级",
-                  "二年级",
-                  "三年级",
-                  "四年级",
-                  "五年级",
-                  "六年级"
-                ],
-                axisLabel: {
-                  show: true,
-                  textStyle: {
-                    color: "#fff",
-                    fontSize: 10
-                  }
-                }
-              },
-              yAxis: {
-                axisLabel: {
-                  show: true,
-                  textStyle: {
-                    color: "#fff",
-                    fontSize: 12
-                  }
-                }
-              },
-              series: [
-                {
-                  name: "该年级所答题数为：",
-                  type: "line",
-                  data: [56, 65, 70, 82, 99, 30, 70],
-                  color: "#00BFFF"
-                }
-              ],
-              grid: {
-                left: 35,
-                top: 35,
-                right: 35,
-                bottom: 35
+      } else if (this.picTitle === "各年级所答题目数柱状图") {
+        // 各年级所答题目数柱状图
+        let option = {
+          title: {
+            text: this.picTitle,
+            left: "center",
+            top: 0,
+            textStyle: {
+              color: "#98FB98"
+            }
+          },
+          tooltip: {
+            // 自定义悬浮框内容
+            formatter: function (params) {
+              return `<span style="color:#00FFFF;text-align:center;">${params.name}</span><br/>
+                        ${params.marker}所答题目数：<span style="color:yellow">${params.value}</span> <br/>`
+            }
+          },
+          backgroundColor: "#45515a",
+          xAxis: {
+            data: [
+              "幼儿园",
+              "一年级",
+              "二年级",
+              "三年级",
+              "四年级",
+              "五年级",
+              "六年级"
+            ],
+            axisLine: {
+              lineStyle: {
+                type: "solid",
+                color: "#fff",
+                width: "1"
+              }
+            },
+            axisLabel: {
+              show: true,
+              textStyle: {
+                color: "#98FB98",
+                fontSize: 10
               }
             }
-            // for (var i = 0; i <= 2; i++) {
-            //   option.series[0].data[i] = res.data.result.data[i].num
-            // }
-            myChart.setOption(option)
-          })
-          .catch((err) => {
-            console.log(err)
-          })
+          },
+          yAxis: {
+            axisLabel: {
+              show: true,
+              textStyle: {
+                color: "#98FB98",
+                fontSize: 12
+              }
+            },
+            axisLine: {
+              lineStyle: {
+                type: "solid",
+                color: "#fff",
+                width: "1"
+              }
+            }
+          },
+          series: [
+            {
+              name: "该年级所答题数为：",
+              type: "bar",
+              data: [
+                this.ResData.gradeProportion.zero,
+                this.ResData.gradeProportion.one,
+                this.ResData.gradeProportion.two,
+                this.ResData.gradeProportion.three,
+                this.ResData.gradeProportion.four,
+                this.ResData.gradeProportion.five,
+                this.ResData.gradeProportion.six
+              ],
+              itemStyle: {
+                normal: {
+                  // 每个柱子的颜色即为colorList数组里的每一项，如果柱子数目多于colorList的长度，则柱子颜色循环使用该数组
+                  color: function (params) {
+                    var colorList = [
+                      "#FFF68F",
+                      "#FFC1C1",
+                      "#FFDEAD",
+                      "#F0FFFF",
+                      "#DDA0DD",
+                      "#B0E2FF",
+                      "#4EEE94"
+                    ]
+                    return colorList[params.dataIndex]
+                  }
+                }
+              }
+            }
+          ],
+          grid: {
+            left: 35,
+            top: 50,
+            right: 35,
+            bottom: 35
+          }
+        }
+        myChart.setOption(option)
       }
     }
-  },
-  created() {
-    this.init()
   }
 }
 </script>
