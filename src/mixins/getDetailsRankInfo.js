@@ -55,7 +55,9 @@ export default {
       // 请求的返回结果
       ResData: null,
       // 用于判断是否显示loading
-      isShow: false
+      isShow: false,
+      // tabTimes作用是当前学生排名以及班级排名两个接口都获取了数据后，再显示，不然就显示loading
+      tabTimes: 0
     }
   },
   methods: {
@@ -94,6 +96,7 @@ export default {
         this.RankInfo_totalSingleNum = data.totalSingleNum
         this.RankInfo_totalTorNum = data.totalTorNum
         this.isShow = true
+        this.tabTimes++
       }).catch(err => {
         console.log(errorHandler(err))
       })
