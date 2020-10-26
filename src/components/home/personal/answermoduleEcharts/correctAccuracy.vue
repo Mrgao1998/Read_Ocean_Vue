@@ -1,11 +1,10 @@
 <template>
   <!--个人答题报告中答对题目类型占比分布-->
   <div>
-    <div style="width: 100%; height: 300%" id="mySector" class="sector"></div>
+    <div style="width: 100%; height: 300%" id="mySector"></div>
   </div>
 </template>
 <script>
-import booksDetailVue from "../../../../views/book/booksDetail.vue"
 // 引入基本模板
 let echarts = require("echarts")
 // 引入提示框和title组件
@@ -17,7 +16,6 @@ export default {
     ResData: Object
   },
   mounted() {
-    console.log(this.ResData)
     this.init()
   },
   methods: {
@@ -51,9 +49,20 @@ export default {
             center: ["50%", "50%"],
             radius: [60, 90], // 饼图的半径，外半径为可视区尺寸（容器高宽中较小一项）的 55% 长度。
             data: [ // 数据数组，name 为数据项名称，value 为数据项值
-              {value: this.ResData.rightSingleNum, name: "单选题", number: ((this.ResData.rightSingleNum / this.ResData.rightCount) * 100).toFixed(4)},
-              {value: this.ResData.rightTofNum, name: "判断题", number: ((this.ResData.rightTofNum / this.ResData.rightCount) * 100).toFixed(4)},
-              {value: this.ResData.rightMultipleNum, name: "多选题", number: ((this.ResData.rightMultipleNum / this.ResData.rightCount) * 100).toFixed(4)}
+              {
+                value: this.ResData.rightSingleNum,
+                name: "单选题",
+                number: ((this.ResData.rightSingleNum / this.ResData.rightCount).toFixed(3) * 100).toFixed(1)},
+              {
+                value: this.ResData.rightTofNum,
+                name: "判断题",
+                number: ((this.ResData.rightTofNum / this.ResData.rightCount).toFixed(3) * 100).toFixed(1)
+              },
+              {
+                value: this.ResData.rightMultipleNum,
+                name: "多选题",
+                number: ((this.ResData.rightMultipleNum / this.ResData.rightCount).toFixed(3) * 100).toFixed(1)
+              }
             ],
             itemStyle: {
               // 图例样式
