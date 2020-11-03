@@ -412,15 +412,15 @@
   </div>
 </template>
 <script>
-import Book from "../../components/common/book/Book.vue";
-import Evaluate from "../../components/common/evaluate/evaluate.vue";
-import Axios from "axios";
-import * as API from "../../api/api.js";
-import creatureCate from "../../utils/creatrueCate.js";
-import user from "../../mixins/user.js";
-import errorHandler from "../../mixins/errorHandler.js";
-import { Toast, MessageBox } from "mint-ui";
-import { Dialog } from "vant";
+import Book from "../../components/common/book/Book.vue"
+import Evaluate from "../../components/common/evaluate/evaluate.vue"
+import Axios from "axios"
+import * as API from "../../api/api.js"
+import creatureCate from "../../utils/creatrueCate.js"
+import user from "../../mixins/user.js"
+import errorHandler from "../../mixins/errorHandler.js"
+import { Toast, MessageBox } from "mint-ui"
+import { Dialog } from "vant"
 // import wx from "weixin-js-sdk"
 export default {
   mixins: [user, errorHandler],
@@ -460,61 +460,61 @@ export default {
       isCorrect: [],
       title: null,
       warmMessage: null,
-      buyQuestion: false,
-    };
+      buyQuestion: false
+    }
   },
   computed: {
     bookId() {
-      var usp = new URLSearchParams(window.location.href.split("?")[1]);
+      var usp = new URLSearchParams(window.location.href.split("?")[1])
       // usp.get("bookId")
       // console.log("this boodId is " + usp.get("bookId"))
-      return usp.get("bookId");
+      return usp.get("bookId")
     },
     code() {
-      var usp = new URLSearchParams(window.location.href.split("?")[1]);
-      return usp.get("code");
+      var usp = new URLSearchParams(window.location.href.split("?")[1])
+      return usp.get("code")
     },
     currentCreatureInfo() {
-      return this.creatureList[this.activeCreatureIndex];
-    },
+      return this.creatureList[this.activeCreatureIndex]
+    }
   },
   filters: {
     formatDate(mm) {
       if (mm) {
-        var date = new Date(mm);
-        var year = date.getFullYear();
+        var date = new Date(mm)
+        var year = date.getFullYear()
         var month =
           date.getMonth() + 1 >= 10
             ? date.getMonth() + 1
-            : "0" + (date.getMonth() + 1);
-        var day = date.getDate() >= 10 ? date.getDate() : "0" + date.getDate();
-        return year + "-" + month + "-" + day;
+            : "0" + (date.getMonth() + 1)
+        var day = date.getDate() >= 10 ? date.getDate() : "0" + date.getDate()
+        return year + "-" + month + "-" + day
       } else {
-        return "";
+        return ""
       }
     },
     formatAccuracy(val) {
-      return Math.ceil(Number(val * 100)) + "%";
-    },
+      return Math.ceil(Number(val * 100)) + "%"
+    }
   },
   components: {
     bookImg: Book,
-    evaluatePopup: Evaluate,
+    evaluatePopup: Evaluate
   },
   methods: {
     handleChange(index) {
-      this.activeCreatureIndex = index;
+      this.activeCreatureIndex = index
     },
     payReadIndividual() {
       Axios({
         url: API.payReadIndividual,
         method: "GET",
         params: {
-          bookId: this.bookId,
+          bookId: this.bookId
         },
         headers: {
-          Authorization: this.token,
-        },
+          Authorization: this.token
+        }
       })
         .then((res) => {
           // var id1 = this.bookId
@@ -526,22 +526,22 @@ export default {
               nonceStr: res.data.data.nonceStr, // 随机串
               package: res.data.data.package,
               signType: res.data.data.signType, // 微信签名方式：
-              paySign: res.data.data.paySign, // 微信签名
+              paySign: res.data.data.paySign // 微信签名
             },
             function (res) {
               if (res.err_msg === "get_brand_wcpay_request:ok") {
                 // 使用以上方式判断前端返回,微信团队郑重提示：
                 // res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
-                this.buyQuestion = false;
-                document.location.assign("/ReadingOcean/wechat/home");
+                this.buyQuestion = false
+                document.location.assign("/ReadingOcean/wechat/home")
               }
             }
-          );
+          )
         })
         .catch((err) => {
-          console.log(err);
-          this.errorHandler(err);
-        });
+          console.log(err)
+          this.errorHandler(err)
+        })
     },
     judgeIfAnswer() {
       if (
@@ -551,36 +551,36 @@ export default {
           this.bookDetail.isDone === false)
       ) {
         if (this.code === "200") {
-          return true;
+          return true
         } else {
-          this.buyQuestion = true; // 显示购买回答问题权限按钮
+          this.buyQuestion = true // 显示购买回答问题权限按钮
           // alert("还未购买此书 无法答题")
-          return false;
+          return false
         }
       } else {
-        return false;
+        return false
       }
       // schoolId === '4419001' || (animalExist && !bookDetail.hasComment && bookDetail.isDone===false)
     },
     judgeIfBuy() {
       if (this.code === "200") {
-        return true;
+        return true
       } else {
-        return false;
+        return false
       }
     },
     judgeIfHasBuy() {
       if (this.code === 200) {
         // 200说明可以免费答题不用买
-        return false;
+        return false
       } else {
-        return true;
+        return true
       }
     },
     categoryBtnActive: function (cate) {
-      this.activeCreatureIndex = 0;
+      this.activeCreatureIndex = 0
       if (this.selectedCate !== cate) {
-        this.selectedCate = cate;
+        this.selectedCate = cate
         Axios({
           url: API.getCreatures,
           method: "GET",
@@ -588,24 +588,24 @@ export default {
             userId: this.userId,
             category: this.selectedCate,
             pageNum: this.currentPage,
-            limits: 9,
+            limits: 9
           },
           headers: {
-            Authorization: this.token,
-          },
+            Authorization: this.token
+          }
         })
           .then((res) => {
-            this.creatureList = res.data.dataList;
-            this.currentPage = res.data.currentPage;
-            this.maxPage = res.data.totalPage;
+            this.creatureList = res.data.dataList
+            this.currentPage = res.data.currentPage
+            this.maxPage = res.data.totalPage
           })
           .catch((err) => {
-            this.errorHandler(err);
-          });
+            this.errorHandler(err)
+          })
       }
     },
     imgWrapActive: function (index) {
-      this.activeCreatureIndex = index;
+      this.activeCreatureIndex = index
     },
     handleSubmit(items) {
       /* 构造新的已评价内容 */
@@ -615,25 +615,25 @@ export default {
         params: {
           bookId: this.bookId,
           userId: this.userId,
-          comments: JSON.stringify(items),
+          comments: JSON.stringify(items)
         },
         headers: {
-          Authorization: this.token,
-        },
+          Authorization: this.token
+        }
       })
         .then((res) => {
           Toast({
             message: res.data.msg,
             position: "middle",
-            duration: 1500,
-          });
-          this.evaPopupVisible = false;
-          this.evaluations = items;
-          this.bookDetail.hasComment = true;
+            duration: 1500
+          })
+          this.evaPopupVisible = false
+          this.evaluations = items
+          this.bookDetail.hasComment = true
         })
         .catch((err) => {
-          this.errorHandler(err);
-        });
+          this.errorHandler(err)
+        })
     },
     /* 加载海洋生物列表方法 */
     getCreatures(config) {
@@ -644,76 +644,76 @@ export default {
           userId: config.userId,
           category: config.category,
           pageNum: config.pageNum,
-          limits: config.limits,
+          limits: config.limits
         },
         headers: {
-          Authorization: config.token,
-        },
-      });
+          Authorization: config.token
+        }
+      })
     },
     /* 初始化海洋生物方法 */
     loadCreature() {
-      this.selectVisibile = !this.selectVisibile;
+      this.selectVisibile = !this.selectVisibile
       if (this.creatureList.length === 0) {
         this.getCreatures({
           userId: this.userId,
           category: this.selectedCate,
           pageNum: this.currentPage,
           limits: 9,
-          token: this.token,
+          token: this.token
         })
           .then((res) => {
-            this.creatureList = res.data.dataList;
-            this.currentPage = res.data.currentPage;
-            this.maxPage = res.data.totalPage;
+            this.creatureList = res.data.dataList
+            this.currentPage = res.data.currentPage
+            this.maxPage = res.data.totalPage
           })
           .catch((err) => {
-            this.errorHandler(err);
-          });
+            this.errorHandler(err)
+          })
       }
     },
     /* 更换海洋生物请求页数 */
     changeCreatureList() {
       if (this.currentPage < this.maxPage) {
-        this.activeCreatureIndex = 0;
-        this.currentPage += 1;
+        this.activeCreatureIndex = 0
+        this.currentPage += 1
         this.getCreatures({
           userId: this.userId,
           category: this.selectedCate,
           pageNum: this.currentPage,
           limits: 9,
-          token: this.token,
+          token: this.token
         })
           .then((res) => {
-            this.creatureList = res.data.dataList;
+            this.creatureList = res.data.dataList
           })
           .catch((err) => {
-            this.errorHandler(err);
-          });
+            this.errorHandler(err)
+          })
       } else {
-        this.activeCreatureIndex = 0;
-        this.currentPage = 1;
+        this.activeCreatureIndex = 0
+        this.currentPage = 1
         this.getCreatures({
           userId: this.userId,
           category: this.selectedCate,
           pageNum: this.currentPage,
           limits: 9,
-          token: this.token,
+          token: this.token
         })
           .then((res) => {
-            this.currentPage = res.data.currentPage;
-            this.creatureList = res.data.dataList;
+            this.currentPage = res.data.currentPage
+            this.creatureList = res.data.dataList
           })
           .catch((err) => {
-            this.errorHandler(err);
-          });
+            this.errorHandler(err)
+          })
       }
     },
     /* 订阅书籍，确认选择海洋生物 */
     confirmCreature() {
       Dialog.confirm({
         title: "提示",
-        message: "确定订阅本书籍?",
+        message: "确定订阅本书籍?"
       }).then((action) => {
         if (action === "confirm") {
           Axios({
@@ -722,76 +722,76 @@ export default {
             params: {
               bookId: this.bookId,
               userId: this.userId,
-              creatureId: this.currentCreatureInfo.id,
+              creatureId: this.currentCreatureInfo.id
             },
             headers: {
-              Authorization: this.token,
-            },
+              Authorization: this.token
+            }
           })
             .then((res) => {
               Toast({
                 message: res.data.msg,
                 position: "middle",
-                duration: 1500,
-              });
-              this.bookDetail.hasTask = true;
+                duration: 1500
+              })
+              this.bookDetail.hasTask = true
               this.bookDetail.creature = {
                 name: this.currentCreatureInfo.name,
-                img: this.currentCreatureInfo.img,
-              };
-              this.selectVisibile = false;
+                img: this.currentCreatureInfo.img
+              }
+              this.selectVisibile = false
             })
             .catch((err) => {
-              this.errorHandler(err);
-            });
+              this.errorHandler(err)
+            })
         }
-      });
+      })
     },
     init() {
       // 初始化
       for (var i = 0; i < 100; i++) {
-        this.anslen[i] = 0;
-        this.isCorrect[i] = 0;
+        this.anslen[i] = 0
+        this.isCorrect[i] = 0
       }
-      this.answerList = [];
-      this.wronganswerList = [];
+      this.answerList = []
+      this.wronganswerList = []
       // console.log(this.isCorrect)
     },
     timeStart() {
       // 开始计时
-      ++this.totalSecond;
-      this.minute = Math.floor(this.totalSecond / 60);
-      this.second = this.totalSecond - this.minute * 60;
+      ++this.totalSecond
+      this.minute = Math.floor(this.totalSecond / 60)
+      this.second = this.totalSecond - this.minute * 60
     },
     answerStop() {
       // 返回书籍详情，本次答题无效
-      this.answerVisibile = !this.answerVisibile;
-      clearInterval(this.clock);
-      this.second = 0;
-      this.minute = 0;
-      this.totalSecond = 0;
-      this.questionlen = 0;
-      this.question = [];
+      this.answerVisibile = !this.answerVisibile
+      clearInterval(this.clock)
+      this.second = 0
+      this.minute = 0
+      this.totalSecond = 0
+      this.questionlen = 0
+      this.question = []
     },
     answerFinish() {
       // 完成答题，调用函数提交
       // 判断是否答完所有题目
-      var num = 0;
+      var num = 0
       for (var i = 0; i < this.question.length; i++) {
         if (this.anslen[i] !== 0) {
-          num++;
+          num++
         }
       }
       if (num === this.questionlen) {
-        clearInterval(this.clock);
-        this.checkAnswer();
-        this.addJson();
-        this.postJson();
+        clearInterval(this.clock)
+        this.checkAnswer()
+        this.addJson()
+        this.postJson()
       } else {
         Dialog.alert({
           title: "警告",
-          message: "您还没有完成全部题目的回答",
-        });
+          message: "您还没有完成全部题目的回答"
+        })
       }
     },
     answerStart() {
@@ -803,138 +803,138 @@ export default {
           method: "GET",
           params: {
             bookId: this.bookId,
-            userId: this.userId,
+            userId: this.userId
           },
           headers: {
-            Authorization: this.token,
-          },
+            Authorization: this.token
+          }
         })
           .then((res) => {
-            console.log(res);
+            console.log(res)
           })
           .catch((err) => {
-            console.log(err);
-            this.errorHandler(err);
-          });
+            console.log(err)
+            this.errorHandler(err)
+          })
       }
-      var i = 0;
+      var i = 0
       Axios({
         url: API.getSingleq,
         method: "GET",
         params: {
-          bookId: this.bookId,
+          bookId: this.bookId
         },
         headers: {
-          Authorization: this.token,
-        },
+          Authorization: this.token
+        }
       }).then((res) => {
         // console.log(res)
-        this.singlequestion = res.data.dataList;
-        this.questionlen += this.singlequestion.length;
+        this.singlequestion = res.data.dataList
+        this.questionlen += this.singlequestion.length
         for (var j = 0; j < this.singlequestion.length; j++) {
-          this.question.push(this.singlequestion[j]);
-          this.rightAnswer[i] = this.singlequestion[j].answer;
-          i++;
-          this.tflen = i;
+          this.question.push(this.singlequestion[j])
+          this.rightAnswer[i] = this.singlequestion[j].answer
+          i++
+          this.tflen = i
         }
         Axios({
           url: API.getTruefalseq,
           method: "GET",
           params: {
-            bookId: this.bookId,
+            bookId: this.bookId
           },
           headers: {
-            Authorization: this.token,
-          },
+            Authorization: this.token
+          }
         }).then((res) => {
           // console.log(res.data)
-          this.tfquestion = res.data.dataList;
-          this.questionlen += this.tfquestion.length;
+          this.tfquestion = res.data.dataList
+          this.questionlen += this.tfquestion.length
           for (var j = 0; j < this.tfquestion.length; j++) {
-            this.question.push(this.tfquestion[j]);
-            this.rightAnswer[i] = this.tfquestion[j].answer;
-            i++;
-            this.mulen = i;
+            this.question.push(this.tfquestion[j])
+            this.rightAnswer[i] = this.tfquestion[j].answer
+            i++
+            this.mulen = i
           }
           Axios({
             url: API.getMultipleq,
             method: "GET",
             params: {
-              bookId: this.bookId,
+              bookId: this.bookId
             },
             headers: {
-              Authorization: this.token,
-            },
+              Authorization: this.token
+            }
           }).then((res) => {
             // console.log(res.data)
-            this.multiplequestion = res.data.dataList;
-            this.questionlen += this.multiplequestion.length;
+            this.multiplequestion = res.data.dataList
+            this.questionlen += this.multiplequestion.length
             for (var j = 0; j < this.multiplequestion.length; j++) {
-              this.question.push(this.multiplequestion[j]);
-              this.rightAnswer[i] = this.multiplequestion[j].answer;
-              i++;
+              this.question.push(this.multiplequestion[j])
+              this.rightAnswer[i] = this.multiplequestion[j].answer
+              i++
             }
-          });
-        });
-      });
-      this.init();
+          })
+        })
+      })
+      this.init()
       // console.log(this.question)
       // console.log(this.rightAnswer)
-      this.answerVisibile = !this.answerVisibile;
-      this.clock = setInterval(this.timeStart, 1000);
+      this.answerVisibile = !this.answerVisibile
+      this.clock = setInterval(this.timeStart, 1000)
     },
     choiceSAnswer($e, index) {
       if ($e.currentTarget.className === "choice") {
-        $e.currentTarget.className = "";
-        this.anslen[index] = 0;
+        $e.currentTarget.className = ""
+        this.anslen[index] = 0
       } else {
-        var child = $e.currentTarget.parentNode.children;
+        var child = $e.currentTarget.parentNode.children
         for (var i = 0; i < child.length; i++) {
-          child[i].className = "";
+          child[i].className = ""
         }
-        $e.currentTarget.className = "choice";
-        this.anslen[index] = 1;
+        $e.currentTarget.className = "choice"
+        this.anslen[index] = 1
         // console.log($e.path[0].attributes)
       }
     },
     choiceMAnswer($e, index) {
       if ($e.currentTarget.className === "choice") {
-        $e.currentTarget.className = "";
-        this.anslen[index]--;
+        $e.currentTarget.className = ""
+        this.anslen[index]--
       } else {
-        $e.currentTarget.className = "choice";
-        this.anslen[index]++;
+        $e.currentTarget.className = "choice"
+        this.anslen[index]++
         // console.log($e.path[0])
       }
     },
     choiceTFAnswer($e, index) {
       if ($e.currentTarget.className === "choice") {
-        $e.currentTarget.className = "";
-        this.anslen[index] = 0;
+        $e.currentTarget.className = ""
+        this.anslen[index] = 0
       } else {
-        var child = $e.currentTarget.parentNode.children;
+        var child = $e.currentTarget.parentNode.children
         for (var i = 0; i < child.length; i++) {
-          child[i].className = "";
+          child[i].className = ""
         }
-        $e.currentTarget.className = "choice";
-        this.anslen[index] = 1;
+        $e.currentTarget.className = "choice"
+        this.anslen[index] = 1
         // console.log($e.path[0])
       }
     },
     checkAnswer() {
       // 把所有题的答案对错存进isCorrect数组里面
-      var choices = document.getElementsByClassName("choice");
+      var choices = document.getElementsByClassName("choice")
       // console.log(choices)
       for (var i = 0; i < this.mulen; i++) {
-        this.userAnswer[i] = choices[i].attributes[0].nodeValue;
+        this.userAnswer[i] = choices[i].attributes[0].nodeValue
       }
-      var dislocation = 0;
+      var dislocation = 0
       for (var k = this.mulen; k < this.rightAnswer.length; k++) {
-        var temp = "";
+        var temp = ""
         if (k === this.mulen) {
-          dislocation = 0;
+          dislocation = 0
         } else {
-          dislocation += this.anslen[k - 1] - 1;
+          dislocation += this.anslen[k - 1] - 1
         }
         // console.log("dislocation", dislocation)
         for (
@@ -944,57 +944,57 @@ export default {
         ) {
           // console.log("j", j)
           // console.log("k", k)
-          temp += choices[j].attributes[0].nodeValue;
+          temp += choices[j].attributes[0].nodeValue
         }
-        this.userAnswer[k] = temp;
+        this.userAnswer[k] = temp
       }
       // console.log(this.userAnswer)
-      var count = 0;
+      var count = 0
       for (var g = 0; g < this.rightAnswer.length; g++) {
         // this.isCorrect[]数组里面 的值等于1的就代表第g+1题正确,否则0为错误
         if (this.userAnswer[g] === this.rightAnswer[g]) {
-          this.isCorrect[g] = 1;
-          count++;
+          this.isCorrect[g] = 1
+          count++
           // eslint-disable-next-line brace-style
         }
         // 高燕生加
         else {
-          this.wronganswerList[this.wronganswerList.length] = g + 1;
+          this.wronganswerList[this.wronganswerList.length] = g + 1
         }
       }
       // 高燕生加
-      var wronganswerstr = "";
+      var wronganswerstr = ""
       for (var z = 0; z < this.wronganswerList.length; z++) {
-        wronganswerstr += this.wronganswerList[z] + " ";
+        wronganswerstr += this.wronganswerList[z] + " "
       }
 
-      var grade = Math.ceil((count * 100) / this.questionlen);
+      var grade = Math.ceil((count * 100) / this.questionlen)
       // this.questionlen为 问题总数  count 为正确的数目
-      this.makeDetail(grade, count, this.questionlen - count, wronganswerstr);
+      this.makeDetail(grade, count, this.questionlen - count, wronganswerstr)
     },
     makeDetail(grade, trueNum, falseNum, wrongnumber) {
       // 对成绩进行等级划分，给与一个弹出框
       if (grade >= 90) {
-        this.title = "太厉害了，你真棒！";
+        this.title = "太厉害了，你真棒！"
       } else if (grade >= 60 && grade < 90) {
-        this.title = "恭喜你，通过测试！";
+        this.title = "恭喜你，通过测试！"
       } else if (grade >= 40 && grade <= 60) {
-        this.title = "差一点点，再读多一会儿书吧！";
+        this.title = "差一点点，再读多一会儿书吧！"
       } else {
-        this.title = "静下心来，仔细阅读吧！";
+        this.title = "静下心来，仔细阅读吧！"
       }
-      this.warmMessage = "正确题数：" + trueNum + "<br>";
-      this.warmMessage += "错误题数：" + falseNum + "<br>";
-      this.warmMessage += "正确率：" + grade + "%<br>";
-      this.warmMessage += "错误题号：" + wrongnumber + "<br>";
+      this.warmMessage = "正确题数：" + trueNum + "<br>"
+      this.warmMessage += "错误题数：" + falseNum + "<br>"
+      this.warmMessage += "正确率：" + grade + "%<br>"
+      this.warmMessage += "错误题号：" + wrongnumber + "<br>"
       this.warmMessage +=
-        "用时：" + this.minute + "分" + this.second + "秒<br>";
+        "用时：" + this.minute + "分" + this.second + "秒<br>"
       // console.log(this.title)
     },
     addJson() {
       // 把数据打包成一个json数据
-      this.answerList += "[";
-      var nowdate = new Date().valueOf();
+      this.answerList += "["
+      var nowdate = new Date().valueOf()
       for (var i = 0; i < this.tflen; i++) {
         var temp = JSON.stringify({
           bookId: this.bookId,
@@ -1004,12 +1004,12 @@ export default {
           duration:
             i === this.question.length - 1 ? this.minute * 60 + this.second : 0,
           answer: this.userAnswer[i],
-          isCorrect: this.isCorrect[i],
-        });
+          isCorrect: this.isCorrect[i]
+        })
         if (i !== this.question.length - 1) {
-          this.answerList += temp + ",";
+          this.answerList += temp + ","
         } else {
-          this.answerList += temp;
+          this.answerList += temp
         }
       }
       for (var j = this.tflen; j < this.mulen; j++) {
@@ -1021,12 +1021,12 @@ export default {
           duration:
             j === this.question.length - 1 ? this.minute * 60 + this.second : 0,
           answer: this.userAnswer[j],
-          isCorrect: this.isCorrect[j],
-        });
+          isCorrect: this.isCorrect[j]
+        })
         if (j !== this.question.length - 1) {
-          this.answerList += temp1 + ",";
+          this.answerList += temp1 + ","
         } else {
-          this.answerList += temp1;
+          this.answerList += temp1
         }
       }
       if (this.mulen === 0 && this.tflen === 0) {
@@ -1041,12 +1041,12 @@ export default {
                 ? this.minute * 60 + this.second
                 : 0,
             answer: this.userAnswer[l],
-            isCorrect: this.isCorrect[l],
-          });
+            isCorrect: this.isCorrect[l]
+          })
           if (l !== this.question.length - 1) {
-            this.answerList += temp3 + ",";
+            this.answerList += temp3 + ","
           } else {
-            this.answerList += temp3;
+            this.answerList += temp3
           }
         }
       } else if (
@@ -1066,17 +1066,17 @@ export default {
                 ? this.minute * 60 + this.second
                 : 0,
             answer: this.userAnswer[k],
-            isCorrect: this.isCorrect[k],
-          });
+            isCorrect: this.isCorrect[k]
+          })
           if (k !== this.question.length - 1) {
-            this.answerList += temp2 + ",";
+            this.answerList += temp2 + ","
           } else {
-            this.answerList += temp2;
+            this.answerList += temp2
           }
         }
       }
       // console.log(this.tflen + "," + this.mulen)
-      this.answerList += "]";
+      this.answerList += "]"
       // console.log(this.question.length)
       // console.log(this.answerList)
     },
@@ -1088,80 +1088,80 @@ export default {
         params: {
           detailJson: this.answerList,
           bookId: this.bookId,
-          sessionUserId: sessionStorage.getItem(API.userIdKey),
+          sessionUserId: sessionStorage.getItem(API.userIdKey)
         },
         headers: {
-          Authorization: this.token,
-        },
+          Authorization: this.token
+        }
       })
         .then((res) => {
           // console.log(res)
           Dialog.alert({
             title: this.title,
-            message: this.warmMessage,
+            message: this.warmMessage
           }).then((action) => {
-            location.reload();
-          });
-          this.title = null;
-          this.warmMessage = null;
+            location.reload()
+          })
+          this.title = null
+          this.warmMessage = null
         })
         .catch((res) => {
-          console.log(res);
+          console.log(res)
           // alert("服务器异常,上传失败")
           Dialog.alert({
             title: "警告",
-            message: "服务器异常,上传失败",
-          });
-          this.title = null;
-          this.warmMessage = null;
-          this.second = 0;
-          this.minute = 0;
-          this.totalSecond = 0;
-          this.questionlen = 0;
-          this.question = [];
-          this.anslen = [];
-        });
+            message: "服务器异常,上传失败"
+          })
+          this.title = null
+          this.warmMessage = null
+          this.second = 0
+          this.minute = 0
+          this.totalSecond = 0
+          this.questionlen = 0
+          this.question = []
+          this.anslen = []
+        })
     },
     feedbackMethod(event) {
       var feedBackText =
         "bookId:" +
         this.bookId +
         ",题目名:" +
-        event.currentTarget.parentNode.firstChild.lastChild.textContent;
+        event.currentTarget.parentNode.firstChild.lastChild.textContent
       MessageBox.prompt("请输入您的反馈内容").then(({ value, action }) => {
-        feedBackText += ",反馈的内容为:" + value;
-        console.log(feedBackText);
+        feedBackText += ",反馈的内容为:" + value
+        console.log(feedBackText)
         Axios({
           url: API.sendFeedback,
           method: "POST",
           params: {
             userId: this.userId,
-            feedback: feedBackText,
-          },
+            feedback: feedBackText
+          }
         })
           .then((res) => {
             Toast({
               message: res.data.message,
               position: "middle",
-              duration: 1500,
-            });
+              duration: 1500
+            })
           })
           .catch((err) => {
-            this.errorHandler(err);
-          });
-      });
+            this.errorHandler(err)
+          })
+      })
     },
     // 购买书籍
     buyBooks(src) {
       window.location.href =
         "http://mp.weixin.qq.com/bizmall/malldetail?id=&pid=" +
         src +
-        "&biz=MzUxOTU3MDg5Ng==&scene=&action=show_detail&showwxpaytitle=1#wechat_redirect";
+        "&biz=MzUxOTU3MDg5Ng==&scene=&action=show_detail&showwxpaytitle=1#wechat_redirect"
       // wx.openProductSpecificView({
       //   productId: src, // 商品id
       //   viewType: 0 // 0.默认值，普通商品详情页1.扫一扫商品详情页2.小店商品详情页
       // })
-    },
+    }
   },
   created() {
     Axios({
@@ -1171,24 +1171,24 @@ export default {
         bookId: this.bookId,
         userId: this.userId,
         schoolId: this.schoolId,
-        userType: this.userType,
+        userType: this.userType
       },
       headers: {
-        Authorization: this.token,
-      },
+        Authorization: this.token
+      }
     })
       .then((res) => {
-        console.log(this.code);
+        console.log(this.code)
         // console.log(res)
-        this.bookDetail = res.data;
+        this.bookDetail = res.data
         // console.log(this.bookDetail)
-        this.evaluations = this.bookDetail.comments;
+        this.evaluations = this.bookDetail.comments
       })
       .catch((err) => {
-        this.errorHandler(err);
-      });
-  },
-};
+        this.errorHandler(err)
+      })
+  }
+}
 </script>
 <style>
 ::-webkit-scrollbar {
