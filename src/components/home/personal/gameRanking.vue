@@ -39,8 +39,8 @@
                   >
                     <van-col span="4">排名</van-col>
                     <van-col span="6">姓名</van-col>
-                    <van-col span="11">班级</van-col>
-                    <van-col span="5">闯关积分</van-col>
+                    <van-col span="8">所处段位</van-col>
+                    <van-col span="6">闯关积分</van-col>
                   </van-row>
                   <!-- 当前学生班级排名 -->
                   <li class="item">
@@ -53,10 +53,10 @@
                       <van-col span="6" class="info">{{
                         RankInfo_studentName
                       }}</van-col>
-                      <van-col span="12" class="info">{{
-                        RankInfo_classesName
+                      <van-col span="8" class="info">{{
+                        RankInfo_rank | judgeLevel
                       }}</van-col>
-                      <van-col span="4" class="info">{{
+                      <van-col span="6" class="info">{{
                         RankInfo_rank
                       }}</van-col>
                     </van-row>
@@ -73,8 +73,8 @@
                     >
                       <rank-number :num="item.number"></rank-number>
                       <van-col span="6">{{ item.name }}</van-col>
-                      <van-col span="12">{{ item.classesName }}</van-col>
-                      <van-col span="4">{{ item.rank }}</van-col>
+                      <van-col span="8">{{ item.rank | judgeLevel }}</van-col>
+                      <van-col span="6">{{ item.rank }}</van-col>
                     </van-row>
                   </li>
                   <!-- loading底部加载 -->
@@ -104,8 +104,8 @@
                   >
                     <van-col span="4">排名</van-col>
                     <van-col span="6">姓名</van-col>
-                    <van-col span="11">班级</van-col>
-                    <van-col span="5">闯关积分</van-col>
+                    <van-col span="8">班级</van-col>
+                    <van-col span="6">闯关积分</van-col>
                   </van-row>
                   <!-- 当前学生年级排名 -->
                   <li class="item">
@@ -118,10 +118,10 @@
                       <van-col span="6" class="info">{{
                         RankInfo_studentName
                       }}</van-col>
-                      <van-col span="12" class="info">{{
+                      <van-col span="8" class="info">{{
                         RankInfo_classesName
                       }}</van-col>
-                      <van-col span="4" class="info">{{
+                      <van-col span="6" class="info">{{
                         RankInfo_rank
                       }}</van-col>
                     </van-row>
@@ -138,8 +138,8 @@
                     >
                       <rank-number :num="item.number"></rank-number>
                       <van-col span="6">{{ item.name }}</van-col>
-                      <van-col span="12">{{ item.classesName }}</van-col>
-                      <van-col span="4">{{ item.rank }}</van-col>
+                      <van-col span="8">{{ item.classesName }}</van-col>
+                      <van-col span="6">{{ item.rank }}</van-col>
                     </van-row>
                   </li>
                   <!-- loading底部加载 -->
@@ -314,6 +314,26 @@ export default {
     Scroll,
     RankNumber
   },
+  filters: {
+    // 过滤器，根据积分返回相应段位
+    judgeLevel(integral) {
+      if (integral >= 0 && integral < 100) {
+        return "倔强青铜"
+      } else if (integral >= 100 && integral < 200) {
+        return "秩序白银"
+      } else if (integral >= 200 && integral < 300) {
+        return "荣耀黄金"
+      } else if (integral >= 300 && integral < 400) {
+        return "尊贵铂金"
+      } else if (integral >= 400 && integral < 500) {
+        return "永恒钻石"
+      } else if (integral >= 500 && integral < 600) {
+        return "至尊星耀"
+      } else {
+        return "最强王者"
+      }
+    }
+  },
   data() {
     return {
       num: "number",
@@ -481,6 +501,7 @@ export default {
             this.tabTimes++
             // 进来默认是班级排名
             this.rankList = this.classRankList
+            console.log(this.rankList)
           }
         )
       )
