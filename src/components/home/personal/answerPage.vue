@@ -231,7 +231,7 @@ export default {
     this.time = setInterval(this.timer, 1000)
     // 获取开始答题的时间戳
     this.nowTime = new Date().getHours()
-    console.log(this.userId)
+    console.log(this.gradeShort(this.userInfo.grade, this.questionGrade))
   },
   data() {
     return {
@@ -302,6 +302,36 @@ export default {
     questionGrade: Number
   },
   methods: {
+    // 获取学生所处年级以及所选题目的差，用于奖励积分
+    gradeShort(userGrade, questionGrade) {
+      let grade
+      switch (userGrade) {
+        case "一年级":
+          grade = 1
+          break
+        case "二年级":
+          grade = 2
+          break
+        case "三年级":
+          grade = 3
+          break
+        case "四年级":
+          grade = 4
+          break
+        case "五年级":
+          grade = 5
+          break
+        case "六年级":
+          grade = 6
+          break
+      }
+      // 如果学生选择的题目大于自己年级
+      if (grade < questionGrade) {
+        return (questionGrade - grade) * 0.1
+      } else {
+        return 0
+      }
+    },
     // 改变提交时题目的格式
     changeQuestionList(questionList) {
       let newList = []
@@ -582,11 +612,14 @@ export default {
               console.log(`总多断题数目为：：${this.totalMultipleNum}`)
               console.log(this.questionList)
               clearInterval(this.time)
-              this.showDialog = true
               // 答题的时间戳
               console.log(this.correctIdList)
               this.nowTime = this.changeNowTime(this.nowTime)
               console.log(this.nowTime)
+              // 根据年级差，给予一定的积分奖励
+              this.integral = Math.round(this.integral * (1 + this.gradeShort(this.userInfo.grade, this.questionGrade)))
+              // 显示答题结果dialog
+              this.showDialog = true
               Axios({
                 url: API.addScoreAndInsertAnswerRecord,
                 method: "POST",
