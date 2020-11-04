@@ -11,18 +11,26 @@
           可爱的<span class="personName">{{ RankInfo_studentName }}同学</span>
         </p>
         <p class="rightTotal-wrapper">
-          个人闯关积分为：<span class="rightTotal">{{ RankInfo_rank }}</span>
-        </p>
-        <p class="rightTotal-wrapper">
           累计答对题目总数为：<span class="rightTotal">{{
             RankInfo_rightCount
           }}</span>
         </p>
         <p class="rightTotal-wrapper">
           每次答题平均时长为：<span class="rightTotal">{{
-            RankInfo_avgTime + "s"
+            RankInfo_avgTime+"s"
           }}</span>
         </p>
+        <p class="rightTotal-wrapper">
+          个人闯关积分为：<span class="rightTotal">{{ RankInfo_rank }}</span>
+        </p>
+        <p class="rightTotal-wrapper">
+          目前所处段位：
+          <span class="level">{{ RankInfo_rank | judgeLevel}}</span>
+        </p>
+        <p class="rightTotal-wrapper" v-if="RankInfo_rank <= 600">
+          距离下一段位还需<span class="rightTotal">{{ RankInfo_rank | short }}</span>积分
+        </p>
+        <p class="highestLevel-wrapper" v-else>恭喜您已经处于最高段位！</p>
         <!--答对题目类型占比分布-->
         <correct-accuracy :ResData="ResData"></correct-accuracy>
         <!--各类型题目正确率柱状图-->
@@ -68,6 +76,30 @@ export default {
     PersonHistogram
   },
   mixins: [getDetailsRankInfo],
+  filters: {
+    // 过滤器，根据积分返回相应段位
+    judgeLevel(integral) {
+      if (integral >= 0 && integral < 100) {
+        return "倔强青铜"
+      } else if (integral >= 100 && integral < 200) {
+        return "秩序白银"
+      } else if (integral >= 200 && integral < 300) {
+        return "荣耀黄金"
+      } else if (integral >= 300 && integral < 400) {
+        return "尊贵铂金"
+      } else if (integral >= 400 && integral < 500) {
+        return "永恒钻石"
+      } else if (integral >= 500 && integral < 600) {
+        return "至尊星耀"
+      } else {
+        return "最强王者"
+      }
+    },
+    // 用于处理距离下一段位差多少分
+    short(integral) {
+      return (100 - integral % 100)
+    }
+  },
   data() {
     return {
       title1: "各类型题目正确率柱状图",
@@ -105,11 +137,20 @@ export default {
     width 100%
     -webkit-overflow-scrolling touch
     overflow-y scroll
+
+    .highestLevel-wrapper
+      font-size 18px
+      text-align center
+      color blue
+      font-weight bold
     .rightTotal-wrapper
       font-size 18px
       text-align center
       .rightTotal
         color yellow
+        font-weight bold
+      .level
+        color red
         font-weight bold
     .personName-wrapper
       text-align center
