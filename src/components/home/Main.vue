@@ -76,7 +76,7 @@ export default {
       token: this.token
     }).then(res => {
       Indicator.close()
-      this.bookList = res.data.dataList
+      this.bookList = res.data.dataList || res.data.result
     }).catch(err => {
       Indicator.close()
       this.errorHandler(err)
