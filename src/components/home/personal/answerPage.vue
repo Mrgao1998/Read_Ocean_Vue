@@ -370,7 +370,6 @@ export default {
     },
     // 向父组件传递关闭答题页面事件
     close() {
-      // this.$emit("closeAnswerPage")
       console.log("接收到close事件了")
       this.$emit("closeAnswerPage")
     },
