@@ -22,10 +22,10 @@
     "syntax-dynamic-import",
     [
       "component",
-      [{
+      {
         "libraryName": "mint-ui",
         "style": true
-      }]
+      }
     ]
   ]
 }
