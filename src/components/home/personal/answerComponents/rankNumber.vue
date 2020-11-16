@@ -27,5 +27,5 @@ export default {
     img
       width 30px
       height 30px
-      margin 10px
+      vertical-align middle
 </style>
