@@ -165,8 +165,8 @@
                   >
                     <van-col span="4">排名</van-col>
                     <van-col span="6">姓名</van-col>
-                    <van-col span="11">年级班级</van-col>
-                    <van-col span="5">闯关积分</van-col>
+                    <van-col span="8">年级班级</van-col>
+                    <van-col span="6">闯关积分</van-col>
                   </van-row>
                   <!-- 当前学生学校排名 -->
                   <li class="item">
@@ -179,10 +179,10 @@
                       <van-col span="6" class="info">{{
                         RankInfo_studentName
                       }}</van-col>
-                      <van-col span="12" class="info">{{
+                      <van-col span="8" class="info school_wrapper">{{
                         RankInfo_gradeName + RankInfo_classesName
                       }}</van-col>
-                      <van-col span="4" class="info">{{
+                      <van-col span="6" class="info">{{
                         RankInfo_rank
                       }}</van-col>
                     </van-row>
@@ -199,10 +199,10 @@
                     >
                       <rank-number :num="item.number"></rank-number>
                       <van-col span="6">{{ item.name }}</van-col>
-                      <van-col span="12">{{
+                      <van-col span="8" class="school_wrapper">{{
                         item.gradeName + item.classesName
                       }}</van-col>
-                      <van-col span="4">{{ item.rank }}</van-col>
+                      <van-col span="6">{{ item.rank }}</van-col>
                     </van-row>
                   </li>
                   <!-- loading底部加载 -->
@@ -227,8 +227,8 @@
                     class="rank-title"
                   >
                     <van-col span="4">排名</van-col>
-                    <van-col span="6">姓名</van-col>
-                    <van-col span="11">学校</van-col>
+                    <van-col span="5">姓名</van-col>
+                    <van-col span="10">学校</van-col>
                     <van-col span="5">闯关积分</van-col>
                   </van-row>
                   <!-- 当前学生社区排名 -->
@@ -239,13 +239,13 @@
                       class="item-detail"
                     >
                       <rank-number :num="RankInfo_totalRank"></rank-number>
-                      <van-col span="6" class="info">{{
+                      <van-col span="5" class="info">{{
                         RankInfo_studentName
                       }}</van-col>
-                      <van-col span="12" class="info">{{
+                      <van-col span="10" class="info school_wrapper">{{
                         RankInfo_schoolName
                       }}</van-col>
-                      <van-col span="4" class="info">{{
+                      <van-col span="5" class="info">{{
                         RankInfo_rank
                       }}</van-col>
                     </van-row>
@@ -261,9 +261,9 @@
                       class="item-detail"
                     >
                       <rank-number :num="item.number"></rank-number>
-                      <van-col span="6">{{ item.name }}</van-col>
-                      <van-col span="12">{{ item.schoolName }}</van-col>
-                      <van-col span="4">{{ item.rank }}</van-col>
+                      <van-col span="5">{{ item.name }}</van-col>
+                      <van-col span="10" class="school_wrapper">{{ item.schoolName }}</van-col>
+                      <van-col span="5">{{ item.rank }}</van-col>
                     </van-row>
                   </li>
                   <!-- loading底部加载 -->
@@ -706,17 +706,16 @@ $font-size-medium = 16px
       left: 0
       width: 100%
       height: 100%
-      background: rgba(7, 17, 27, 0.4)
+      background rgba(7, 17, 27, 0.4)
   .bg-layer
     position: relative
     height: 100%
-    background: $color-background
+    background $color-background
   .list
     position: fixed
     top: 0
     bottom: 0
     width: 100%
-    background: $color-background
     .rank-list-wrapper
       // padding: 20px 30px
       .loading-container
@@ -731,23 +730,24 @@ $font-size-medium = 16px
         .rank-title
           height 30px
           line-height 30px
-          background-color $color-background
           text-align center
           font-size 16px
           font-weight bold
         .item
-          display: flex
+          display flex
           align-items: center
           text-align center
-          box-sizing: border-box
-          height: 52px
+          box-sizing border-box
           font-size 14px
-          background-color $color-background
           .item-detail
             width 100%
             height 100%
             line-height 52px
             text-align center
+            .school_wrapper
+              height 52px
+              line-height 52px
+              overflow hidden
             .info
               color blue
         .loadMore
