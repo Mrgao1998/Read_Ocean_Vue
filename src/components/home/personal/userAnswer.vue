@@ -74,7 +74,6 @@
           :TrueAnswerList="TrueAnswerList"
           :questionGrade="grade"
           @closeAnswerPage="closeAnswerPage"
-          @reduceAnswerCountByStudentId="reduceAnswerCountByStudentId"
         ></answer-page>
       </transition>
     </div>
@@ -141,17 +140,51 @@ export default {
     console.log("token               " + this.token)
   },
   methods: {
-    // 扣减答题次数
-    reduceAnswerCountByStudentId() {
-      this.getAnswerCount()
-    },
     // 点击按钮展示ActionSheet动作面板
     showAction() {
       this.showActionSheet = true
     },
     // 关闭闯关页面
     closeAnswerPage() {
-      this.showAnswerPage = false
+      // 扣减答题次数
+      Axios({
+        url: API.reduceAnswerCountByStudentId,
+        method: "POST",
+        params: {
+          studentId: this.userId
+        },
+        headers: {
+          Authorization: this.token
+        }
+      })
+        .then((res) => {
+          if (res.data.code === 200) {
+            // 重新获取闯关次数
+            Axios({
+              url: API.getAnswerCountByStudentId,
+              method: "GET",
+              params: {
+                suit: this.grade,
+                pageNo: 1,
+                pageSize: 20,
+                studentId: this.userId
+              },
+              headers: {
+                Authorization: this.token
+              }
+            })
+              .then((res) => {
+                this.times = res.data
+                this.showAnswerPage = false
+              })
+              .catch((err) => {
+                this.errorHandler(err)
+              })
+          }
+        })
+        .catch((err) => {
+          this.errorHandler(err)
+        })
     },
     // 个人详情页面
     goPersonalDetails() {
