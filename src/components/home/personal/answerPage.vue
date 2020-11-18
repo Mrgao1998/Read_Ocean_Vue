@@ -171,27 +171,7 @@
       </van-row>
     </div>
     <!-- 答题结果dialog -->
-    <van-dialog
-      v-model="showDialog"
-      :showCancelButton="isFalse"
-      confirmButtonText="返回"
-      :title="dialogTitle"
-      show-cancel-button
-      @close="close"
-    >
-      <p>
-        正确率：<span>{{ accuracy }}</span>
-      </p>
-      <p>
-        答错题目数目为：<span>{{ wrongCount }}</span>
-      </p>
-      <p>
-        添加的积分：<span>{{ integral }}</span>
-      </p>
-      <p>
-        答题所花时间为：<span>{{ times }}s</span>
-      </p>
-    </van-dialog>
+    <answer-result v-if="showDialog" :List="List" :wrongCount="wrongCount" :integral="integral"  :questionListLength="questionList.length" :timeStr="str" :accuracy="accuracy" @close="close"></answer-result>
   </div>
 </template>
 
@@ -201,6 +181,7 @@ import Axios from "axios"
 import * as API from "../../../api/api.js"
 import user from "../../../mixins/user.js"
 import errorHandler from "../../../mixins/errorHandler.js"
+import answerResult from "./answerResult.vue"
 import {
   RadioGroup,
   Radio,
@@ -225,13 +206,15 @@ Vue.use(NavBar)
 Vue.use(Dialog)
 export default {
   name: "AnswerPage",
+  components: {
+    answerResult
+  },
   mixins: [user, errorHandler],
   mounted() {
     // 开始计时
     this.time = setInterval(this.timer, 1000)
     // 获取开始答题的时间戳
     this.nowTime = new Date().getHours()
-    console.log(this.gradeShort(this.userInfo.grade, this.questionGrade))
   },
   data() {
     return {
@@ -273,6 +256,8 @@ export default {
         "ADE",
         "BCD"
       ],
+      // 用于判断当前题目答案是否正确
+      List: [],
       // 学生答对题目id的数组
       correctIdList: [],
       // 轮播图是否可以手动滑动
@@ -286,7 +271,7 @@ export default {
       // 错误题数
       wrongCount: 0,
       // 答题正确率
-      accuracy: "",
+      accuracy: null,
       // 展示dialog组件
       showDialog: false,
       // dialog组件标题
@@ -418,20 +403,6 @@ export default {
         .then(() => {
           // on confirm
           Toast("您已离开答题闯关")
-          // Axios({
-          //   url: API.reduceAnswerCountByStudentId,
-          //   method: "POST",
-          //   data: {
-          //     studentId: this.userId
-          //   },
-          //   headers: {
-          //     Authorization: this.token
-          //   }
-          // }).then(res => {
-          //   console.log(res)
-          // }).catch(err => {
-          //   errorHandler(err)
-          // })
           this.$emit("closeAnswerPage")
           clearInterval(this.time)
         })
@@ -518,6 +489,8 @@ export default {
                     console.log(`第${i + 1}单选或判断题题答案正确！`)
                     // 单选或判断答对加3分
                     this.integral += 3
+                    // 存放当前题目正确
+                    this.List[i] = true
                     // 把答对的题目id加入数组中
                     if (this.questionList[i].answer === "0" || this.questionList[i].answer === "1") {
                       this.correctIdList.push({
@@ -533,6 +506,7 @@ export default {
                       })
                     }
                   } else {
+                    this.List[i] = false
                     this.wrongCount++
                     console.log(`第${i + 1}题答案错误！！`)
                   }
@@ -559,9 +533,11 @@ export default {
                       }
                     }
                     if (Isequal === false) {
+                      this.List[i] = false
                       this.wrongCount++
                       console.log(`第${i + 1}多选题答案错误！！`)
                     } else {
+                      this.List[i] = true
                       // 多选题答对加5分
                       this.integral += 5
                       // 把答对的题目id加入数组中
@@ -580,11 +556,11 @@ export default {
                 }
               }
               // 正确率
-              this.accuracy = `${(
+              this.accuracy = (
                 ((this.questionList.length - this.wrongCount) /
                   this.questionList.length) *
                 100
-              ).toFixed(1)}%`
+              ).toFixed(1)
               // 处理dialog显示的title
               if ((
                 ((this.questionList.length - this.wrongCount) /
@@ -602,7 +578,8 @@ export default {
                 this.dialogTitle = "仍需要加油哦"
               }
               console.log(`添加的积分为：${this.integral}`)
-              console.log(this.correctIdList)
+              console.log(this.AnswerList)
+              console.log(this.questionList)
               console.log(`错误的题目总数为：${this.wrongCount}`)
               console.log(`本次答题所花时间为为：${this.times}s`)
               console.log(`本次答题正确率为：${this.accuracy}%`)
@@ -612,9 +589,7 @@ export default {
               console.log(this.questionList)
               clearInterval(this.time)
               // 答题的时间戳
-              console.log(this.correctIdList)
               this.nowTime = this.changeNowTime(this.nowTime)
-              console.log(this.nowTime)
               // 根据年级差，给予一定的积分奖励
               this.integral = Math.round(this.integral * (1 + this.gradeShort(this.userInfo.grade, this.questionGrade)))
               // 显示答题结果dialog
@@ -768,4 +743,11 @@ export default {
       background-color pink
     .next
       background-color green
+  .van-dialog__wrapper
+    position absolute
+    top 0
+    left 0
+    bottom 0
+    right 0
+    background-color pink 
 </style>

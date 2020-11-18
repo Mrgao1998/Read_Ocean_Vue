@@ -74,6 +74,7 @@
           :TrueAnswerList="TrueAnswerList"
           :questionGrade="grade"
           @closeAnswerPage="closeAnswerPage"
+          ref="answerPage"
         ></answer-page>
       </transition>
     </div>
@@ -174,8 +175,9 @@ export default {
               }
             })
               .then((res) => {
-                this.times = res.data
                 this.showAnswerPage = false
+                this.times = res.data
+                this.$refs.answerPage.showDialog = false
               })
               .catch((err) => {
                 this.errorHandler(err)
